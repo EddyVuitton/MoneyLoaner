@@ -7,6 +7,6 @@ public partial class App
 {
     private readonly List<Assembly> _additionalAssemblies = new()
     {
-        typeof(MainLayout).Assembly,
+        typeof(MainLayout).Assembly
     };
 }

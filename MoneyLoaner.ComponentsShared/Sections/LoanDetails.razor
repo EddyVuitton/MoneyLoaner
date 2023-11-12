@@ -56,7 +56,7 @@
                     {
                         @_DayOfDatePayment.Value.Day
                     } dzień mies.
-                    <input @bind-value="_DayOfDatePayment"
+                    <input @onchange="@((e) => OnChange(e))"
                            id="myDateInput"
                            type="date"
                            min="@_dateRangeMin"

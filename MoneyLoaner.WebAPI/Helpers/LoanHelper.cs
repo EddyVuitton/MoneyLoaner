@@ -32,6 +32,18 @@ public static class LoanHelper
         return Convert.ToDecimal(result);
     }
 
+    private static DateTime NextInstallmentDatePayment(DateTime previousDate, LoanDto loan)
+    {
+        var endOfMonth = DateTime.DaysInMonth(previousDate.Year, previousDate.Month);
+
+        if (loan.DayOfDatePayment > endOfMonth)
+        {
+            return new DateTime(previousDate.Year, previousDate.Month, endOfMonth).AddMonths(1);
+        }
+
+        return new DateTime(previousDate.Year, previousDate.Month, loan.DayOfDatePayment).AddMonths(1);
+    }
+
     #endregion PrivateMethods
 
     #region PublicMethods
@@ -85,7 +97,7 @@ public static class LoanHelper
             remainingPrincipalToRepay -= Math.Round(principalInstallment, 2);
             remainingFeeToRepay -= Math.Round(feeAmount, 2);
             previousPaymentDate = currentPaymentDate;
-            currentPaymentDate = new DateTime(currentPaymentDate.Year, currentPaymentDate.Month, loan.DayOfDatePayment).AddMonths(1);
+            currentPaymentDate = NextInstallmentDatePayment(currentPaymentDate, loan);
         }
 
         return _installments;

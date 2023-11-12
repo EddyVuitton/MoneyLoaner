@@ -39,9 +39,7 @@
 </style>
 
 <div class="d-flex flex-column" style="width: 100%; height: 800px;">
-    <div class="d-flex flex-row justify-space-around" style="width: 100%; height: 100%;">
-        <div style="width: 30%;">
-        </div>
+    <div class="d-flex justify-center" style="width: 100%; height: 100%;">
         <div class="d-flex flex-column gap-y-4 section-wrapper" style="width: 30%; padding: 1% 1%; margin: 1% 0%;">
             <div class="d-flex flex-column gap-y-2">
                 <div class="d-flex justify-center">
@@ -123,6 +121,6 @@
     </div>
     <MudDivider />
     <div class="d-flex justify-center" style="width: 100%; height: 100%;">
-        <LoanDetails LoanDto="_loan" InstallmentListDto="_installmentListDto" />
+        <LoanDetails LoanDto="_loan" InstallmentListDto="_installmentListDto" ParamChangeDatePayment="ChangeDatePayment" />
     </div>
 </div>

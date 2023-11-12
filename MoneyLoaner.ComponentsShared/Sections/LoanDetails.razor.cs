@@ -7,6 +7,8 @@ public partial class LoanDetails
 {
     [Parameter] public LoanDto LoanDto { get; set; } = new LoanDto();
     [Parameter] public List<InstallmentDto> InstallmentListDto { get; set; } = new List<InstallmentDto>();
+    [Parameter] public Action<DateTime?>? ParamChangeDatePayment { get; set; }
+
 
     private readonly DateTime _now = DateTime.Now;
     private string _dateRangeMin = string.Empty;
@@ -39,6 +41,21 @@ public partial class LoanDetails
         {
             _DayOfDatePayment = LoanDto.FirstInstallmentPaymentDate;
             StateHasChanged();
+        }
+    }
+
+    private void OnChange(ChangeEventArgs e)
+    {
+        if (e.Value is not null && ParamChangeDatePayment is not null)
+        {
+            if (string.IsNullOrEmpty(e.Value.ToString()))
+            {
+                _DayOfDatePayment = null;
+                return;
+            }
+
+            _DayOfDatePayment = Convert.ToDateTime(e.Value);
+            ParamChangeDatePayment.Invoke(_DayOfDatePayment);
         }
     }
 }

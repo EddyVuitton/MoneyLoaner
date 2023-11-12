@@ -5,6 +5,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
   <ItemGroup>
+    <ProjectReference Include="..\MoneyLoaner.ComponentsShared\MoneyLoaner.ComponentsShared.csproj" />
     <ProjectReference Include="..\MoneyLoaner.Components\MoneyLoaner.Components.csproj" />
     <ProjectReference Include="..\MoneyLoaner.WebAPI\MoneyLoaner.WebAPI.csproj" />
   </ItemGroup>

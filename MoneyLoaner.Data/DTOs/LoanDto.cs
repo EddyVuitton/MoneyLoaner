@@ -9,4 +9,6 @@ public class LoanDto
     public decimal Principal { get; set; }
     public decimal Fee { get; set; }
     public decimal InterestRate { get; set; }
+
+    public List<InstallmentDto>? InstallmentDtoList { get; set; }
 }

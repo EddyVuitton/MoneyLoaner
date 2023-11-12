@@ -1,4 +1,5 @@
 ﻿using MoneyLoaner.Server.Services;
+using MoneyLoaner.WebAPI.Data;
 using MudBlazor.Services;
 
 namespace MoneyLoaner.Server.Helpers
@@ -11,6 +12,7 @@ namespace MoneyLoaner.Server.Helpers
             builder.Services.AddServerSideBlazor();
             builder.Services.AddMudServices();
             builder.Services.AddDebcior();
+            builder.Services.AddSingleton<StateContainer>();
         }
     }
 }

@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Components;
 using MoneyLoaner.ComponentsShared.Helpers.Snackbar;
 using MoneyLoaner.Data.DTOs;
+using MoneyLoaner.WebAPI.Data;
+using MoneyLoaner.WebAPI.Extensions;
 using MoneyLoaner.WebAPI.Helpers;
 using MoneyLoaner.WebAPI.Services.ApplicationService;
 
@@ -10,6 +12,8 @@ public partial class LoanInfo
 {
     [Inject] public IApplicationService? ApplicationService { get; set; }
     [Inject] public ISnackbarHelper? SnackbarHelper { get; set; }
+    [Inject] public StateContainer? StateContainer { get; set; }
+    [Inject] public NavigationManager? NavigationManager { get; set; }
 
     private readonly DateTime _now = DateTime.Now;
 
@@ -39,19 +43,31 @@ public partial class LoanInfo
         LoadDefulatValues();
     }
 
+    public void OpenCounterWithData()
+    {
+        if (StateContainer is not null && NavigationManager is not null)
+        {
+            var hashCode = _loan.GetHashCode();
+
+            StateContainer.AddRoutingObjectParameter(_loan, hashCode);
+            NavigationManager.NavigateTo($"/Proposal/{hashCode}");
+        }
+    }
+
     private void Submit()
     {
+        OpenCounterWithData();
     }
 
     private void LoadDefulatValues()
     {
         _loanAmount = 5000;
         _loanAmountMin = 1000;
-        _loanAmountMax = 25000;
+        _loanAmountMax = 100000;
         _loanAmountStep = 100;
 
-        _loanPeriod = 36;
-        _loanPeriodMin = 36;
+        _loanPeriod = 24;
+        _loanPeriodMin = 12;
         _loanPeriodMax = 72;
         _loanPeriodStep = 3;
 
@@ -91,10 +107,21 @@ public partial class LoanInfo
         StateHasChanged();
     }
 
+    private void ChangeDatePayment(DateTime? day)
+    {
+        if (day is not null)
+        {
+            _loan.DayOfDatePayment = day.Value.Day;
+            CalculateInstallments();
+            StateHasChanged();
+        }
+    }
+
     private void CalculateInstallments()
     {
         _installmentListDto = LoanHelper.GetInstallmentList(_loan!);
         _firstInstallmentTotal = _installmentListDto.First().Total;
+        _loan.InstallmentDtoList = _installmentListDto;
     }
 
     private void LoanAmountPlus()

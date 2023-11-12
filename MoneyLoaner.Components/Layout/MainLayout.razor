@@ -1,0 +1,17 @@
+﻿@inherits LayoutComponentBase
+
+<MudThemeProvider />
+<MudDialogProvider />
+<MudSnackbarProvider />
+
+<MudLayout>
+    <MudAppBar Elevation="0"
+               Class=""
+               Style="height: 130px;"
+               Dense="true"
+               Fixed="false">
+    </MudAppBar>
+    <MudMainContent Style="padding: 0px;">
+        @Body
+    </MudMainContent>
+</MudLayout>

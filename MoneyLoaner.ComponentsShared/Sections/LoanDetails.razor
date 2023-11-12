@@ -1,0 +1,70 @@
+﻿<style>
+    .info-block {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-around;
+    }
+
+    .cs_column-list {
+        padding: 0 0.5rem;
+        flex-grow: 1;
+    }
+
+        .cs_column-list .cs_column-list-item {
+            margin: 0.5rem 1rem;
+            display: flex;
+            justify-content: space-between;
+            padding: 0.3rem 0;
+            font-size: 20px;
+        }
+</style>
+
+<div class="d-flex flex-column gap-y-4" style="width: 80%; margin-top: 1%; padding: 0% 5%;">
+    <div>
+        <MudText Typo="Typo.h4" Style="font-weight: bold;">Szczegóły oferty</MudText>
+    </div>
+    <div class="info-block">
+        <div class="cs_column-list">
+            <div class="cs_column-list-item">
+                <span>kwota wnioskowana</span>
+                <span style="font-weight: bold;">@LoanDto.Principal.ToString("N2") zł</span>
+            </div>
+            <div class="cs_column-list-item">
+                <span>okres spłaty</span>
+                <span style="font-weight: bold;">@LoanDto.Installments mies.</span>
+            </div>
+        </div>
+        <div class="cs_column-list">
+            <div class="cs_column-list-item">
+                <span>odsetki</span>
+                <span style="font-weight: bold;">@InstallmentListDto.Sum(x => x.Interest).ToString("N2") zł</span>
+            </div>
+            <div class="cs_column-list-item">
+                <span>prowizja</span>
+                <span style="font-weight: bold;">@InstallmentListDto.Sum(x => x.Fee).ToString("N2") zł</span>
+            </div>
+        </div>
+        <div class="cs_column-list">
+            <div class="cs_column-list-item">
+                <span>całkowita kwota do zapłaty</span>
+                <span style="font-weight: bold;">@InstallmentListDto.Sum(x => x.Total).ToString("N2") zł</span>
+            </div>
+            <div class="cs_column-list-item">
+                <span>raty płatne do</span>
+                <span style="font-weight: bold;">
+                    @if (@_DayOfDatePayment is not null)
+                    {
+                        @_DayOfDatePayment.Value.Day
+                    } dzień mies.
+                    <input @bind-value="_DayOfDatePayment"
+                           id="myDateInput"
+                           type="date"
+                           min="@_dateRangeMin"
+                           max="@_dateRangeMax"
+                           class="align-self-end"
+                           style="width: 30px; height: 100%; padding: 0% 1.5%; border: 1px solid #dddddd; border-radius: 8px;" />
+                </span>
+            </div>
+        </div>
+    </div>
+</div>

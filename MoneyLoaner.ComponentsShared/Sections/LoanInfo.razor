@@ -1,0 +1,128 @@
+﻿<style>
+    .section-wrapper {
+        border: 1px solid #cccccc;
+        border-radius: 4rem;
+    }
+
+    .value-wrapper {
+        width: 50%;
+        border: 1px solid #cccccc;
+        border-radius: 6rem;
+        padding: 2%;
+        text-align: center;
+        font-size: 2.5rem;
+        font-weight: bold;
+    }
+
+    .value-title {
+        font-size: 1.5rem;
+        font-weight: 500;
+    }
+
+    .loan-calculated-container {
+        border: 1px solid #cccccc;
+        border-radius: 6rem;
+        padding: 0% 7%;
+    }
+
+    .loan-calculated-title {
+        font-size: 1.3rem;
+        font-weight: 500;
+        text-align: center;
+    }
+
+    .loan-calculated-value {
+        font-size: 2.5rem;
+        font-weight: bold;
+        text-align: center;
+    }
+</style>
+
+<div class="d-flex flex-column" style="width: 100%; height: 800px;">
+    <div class="d-flex flex-row justify-space-around" style="width: 100%; height: 100%;">
+        <div style="width: 30%;">
+        </div>
+        <div class="d-flex flex-column gap-y-4 section-wrapper" style="width: 30%; padding: 1% 1%; margin: 1% 0%;">
+            <div class="d-flex flex-column gap-y-2">
+                <div class="d-flex justify-center">
+                    <span class="value-title">Ile potrzebujesz gotówki?</span>
+                </div>
+                <div class="d-flex flex-row justify-center gap-x-8">
+                    <div class="align-self-center">
+                        <MudIconButton OnClick=LoanAmountMinus Icon="fa-solid fa-minus" Color="Color.Primary" Style="padding: 8px" Size="Size.Large"></MudIconButton>
+                    </div>
+                    <div class="value-wrapper">
+                        @_loanAmount.ToString() zł
+                    </div>
+                    <div class="align-self-center">
+                        <MudIconButton OnClick=LoanAmountPlus Icon="fa-solid fa-plus" Color="Color.Primary" Style="padding: 8px" Size="Size.Large"></MudIconButton>
+                    </div>
+                </div>
+                <div class="d-flex justify-center">
+                    <MudSlider T="decimal"
+                               Value="_loanAmount"
+                               ValueChanged="LoanValueChanged"
+                               Min="_loanAmountMin"
+                               Max="_loanAmountMax"
+                               Step="_loanAmountStep"
+                               Color="Color.Primary"
+                               Variant="Variant.Text">
+                    </MudSlider>
+                </div>
+            </div>
+            <div class="d-flex flex-column gap-y-2">
+                <div class="d-flex justify-center">
+                    <span class="value-title">Na ile miesięcy?</span>
+                </div>
+                <div class="d-flex flex-row justify-center gap-x-8">
+                    <div class="align-self-center">
+                        <MudIconButton OnClick=LoanPeriodMinus Icon="fa-solid fa-minus" Color="Color.Primary" Style="padding: 8px" Size="Size.Large"></MudIconButton>
+                    </div>
+                    <div class="value-wrapper" style="">
+                        @_loanPeriod.ToString() m-cy
+                    </div>
+                    <div class="align-self-center">
+                        <MudIconButton OnClick=LoanPeriodPlus Icon="fa-solid fa-plus" Color="Color.Primary" Style="padding: 8px" Size="Size.Large"></MudIconButton>
+                    </div>
+                </div>
+                <div class="d-flex justify-center">
+                    <MudSlider T="decimal"
+                               Value="_loanPeriod"
+                               ValueChanged="LoanPeriodValueChanged"
+                               Min="_loanPeriodMin"
+                               Max="_loanPeriodMax"
+                               Step="_loanPeriodStep"
+                               Color="Color.Primary"
+                               Variant="Variant.Text">
+                    </MudSlider>
+                </div>
+            </div>
+            <div style="height: 100%;">
+                <div class="d-flex flex-column gap-y-4" style="height: 100%;">
+                    <div class="d-flex flex-row justify-space-around">
+                        <div class="d-flex flex-column loan-calculated-container">
+                            <span class="loan-calculated-title">Rata od</span>
+                            <span class="loan-calculated-value">@_firstInstallmentTotal zł</span>
+                        </div>
+                        <div class="d-flex flex-column loan-calculated-container">
+                            <span class="loan-calculated-title">RRSO</span>
+                            <span class="loan-calculated-value">N/A %</span>
+                        </div>
+                    </div>
+                    <div class="d-flex justify-center">
+                        <MudButton OnClick="Submit"
+                                   Variant="Variant.Filled"
+                                   Color="Color.Primary"
+                                   Style="font-size: 1.1rem; color: white; padding: 3% 6%; border-radius: 10px;">
+                            Złóż wniosek
+                        </MudButton>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <MudDivider />
+    <div class="d-flex justify-center" style="width: 100%; height: 100%;">
+        <LoanDetails LoanDto="_loan" InstallmentListDto="_installmentListDto" />
+    </div>
+</div>

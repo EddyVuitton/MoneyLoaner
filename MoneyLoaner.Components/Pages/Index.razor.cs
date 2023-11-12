@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Components;
-using MoneyLoaner.WebAPI.Services.ApplicationService;
 using MoneyLoaner.ComponentsShared.Helpers.Snackbar;
+using MoneyLoaner.WebAPI.Services.ApplicationService;
 
 namespace MoneyLoaner.Components.Pages;
 

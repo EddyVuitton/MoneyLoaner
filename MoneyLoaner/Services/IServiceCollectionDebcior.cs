@@ -11,7 +11,6 @@ public static class IServiceCollectionDebcior
         services.AddScoped<IApplicationService, ApplicationService>(); //webapi
         services.AddScoped<ISnackbarHelper, SnackbarHelper>();
 
-
         return services;
     }
 }

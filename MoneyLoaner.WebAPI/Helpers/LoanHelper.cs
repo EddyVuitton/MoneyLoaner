@@ -1,10 +1,11 @@
 ﻿using MoneyLoaner.Data.DTOs;
 
-namespace MoneyLoaner.ComponentsShared.Helpers;
+namespace MoneyLoaner.WebAPI.Helpers;
 
 public static class LoanHelper
 {
     #region PrivateMethods
+
     private static decimal CalculateXIRREquation(List<InstallmentDto> installments, decimal rate)
     {
         double result = 0;
@@ -30,9 +31,11 @@ public static class LoanHelper
 
         return Convert.ToDecimal(result);
     }
+
     #endregion PrivateMethods
 
     #region PublicMethods
+
     public static decimal GetFixedInstallmentAmount(LoanDto loan)
     {
         var monthlyInterestRate = loan.InterestRate / 12;

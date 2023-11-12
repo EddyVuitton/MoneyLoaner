@@ -1,12 +1,13 @@
-﻿using MoneyLoaner.Data.DTOs;
+﻿using Microsoft.EntityFrameworkCore;
 using MoneyLoaner.Data.Helpers;
-using Microsoft.EntityFrameworkCore;
 
 namespace MoneyLoaner.Data.Context;
 
 public partial class DBContext : DbContext
 {
-    public DBContext(DbContextOptions<DBContext> options) : base(options) { }
+    public DBContext(DbContextOptions<DBContext> options) : base(options)
+    {
+    }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -15,5 +16,5 @@ public partial class DBContext : DbContext
         OnModelCreatingPartial(modelBuilder);
     }
 
-    partial void OnModelCreatingPartial(ModelBuilder modelBuilder);
+    private partial void OnModelCreatingPartial(ModelBuilder modelBuilder);
 }

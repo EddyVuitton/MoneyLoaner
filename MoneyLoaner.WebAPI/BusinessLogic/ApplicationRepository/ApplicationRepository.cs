@@ -16,7 +16,7 @@ public class ApplicationRepository : IApplicationRepository
     public async Task<TestModelDto> GetTest()
     {
         var result = await _context.SqlQueryAsync<TestModelDto>("select 1 as id");
-        
-        return result.FirstOrDefault();
+
+        return result.First();
     }
 }

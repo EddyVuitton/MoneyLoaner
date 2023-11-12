@@ -7,6 +7,7 @@ public class InstallmentDto
     public decimal Interest { get; set; }
     public decimal Fee { get; set; }
     public DateTime PaymentDate { get; set; }
+
     public decimal Total
     {
         get

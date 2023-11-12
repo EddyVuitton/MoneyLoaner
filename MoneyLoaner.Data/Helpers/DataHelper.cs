@@ -1,5 +1,4 @@
-﻿using MoneyLoaner.Data.DTOs;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 
 namespace MoneyLoaner.Data.Helpers;
 

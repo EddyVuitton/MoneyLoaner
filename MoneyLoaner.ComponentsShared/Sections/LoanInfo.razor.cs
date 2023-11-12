@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Components;
-using MoneyLoaner.ComponentsShared.Helpers;
 using MoneyLoaner.ComponentsShared.Helpers.Snackbar;
 using MoneyLoaner.Data.DTOs;
+using MoneyLoaner.WebAPI.Helpers;
 using MoneyLoaner.WebAPI.Services.ApplicationService;
 
 namespace MoneyLoaner.ComponentsShared.Sections;
@@ -41,7 +41,6 @@ public partial class LoanInfo
 
     private void Submit()
     {
-
     }
 
     private void LoadDefulatValues()

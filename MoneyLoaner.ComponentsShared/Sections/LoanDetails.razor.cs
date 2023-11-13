@@ -7,8 +7,7 @@ public partial class LoanDetails
 {
     [Parameter] public LoanDto LoanDto { get; set; } = new LoanDto();
     [Parameter] public List<InstallmentDto> InstallmentListDto { get; set; } = new List<InstallmentDto>();
-    [Parameter] public Action<DateTime?>? ParamChangeDatePayment { get; set; }
-
+    [Parameter] public Func<DateTime?, Task>? ParamChangeDatePayment { get; set; }
 
     private readonly DateTime _now = DateTime.Now;
     private string _dateRangeMin = string.Empty;

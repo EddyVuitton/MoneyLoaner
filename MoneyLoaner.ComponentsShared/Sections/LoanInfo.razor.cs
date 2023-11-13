@@ -1,10 +1,14 @@
 ﻿using Microsoft.AspNetCore.Components;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.JSInterop;
+using MoneyLoaner.ComponentsShared.Extensions;
 using MoneyLoaner.ComponentsShared.Helpers.Snackbar;
 using MoneyLoaner.Data.DTOs;
 using MoneyLoaner.WebAPI.Data;
 using MoneyLoaner.WebAPI.Extensions;
 using MoneyLoaner.WebAPI.Helpers;
 using MoneyLoaner.WebAPI.Services.ApplicationService;
+using System.Text.Json;
 
 namespace MoneyLoaner.ComponentsShared.Sections;
 
@@ -12,6 +16,7 @@ public partial class LoanInfo
 {
     [Inject] public IApplicationService? ApplicationService { get; set; }
     [Inject] public ISnackbarHelper? SnackbarHelper { get; set; }
+    [Inject] public IJSRuntime? JS { get; set; }
     [Inject] public StateContainer? StateContainer { get; set; }
     [Inject] public NavigationManager? NavigationManager { get; set; }
 
@@ -40,18 +45,12 @@ public partial class LoanInfo
     {
         await base.OnInitializedAsync();
 
-        LoadDefulatValues();
+        await LoadDefulatValues();
     }
 
     public void OpenCounterWithData()
     {
-        if (StateContainer is not null && NavigationManager is not null)
-        {
-            var hashCode = _loan.GetHashCode();
-
-            StateContainer.AddRoutingObjectParameter(_loan, hashCode);
-            NavigationManager.NavigateTo($"/Proposal/{hashCode}");
-        }
+        NavigationManager?.NavigateTo($"/Proposal/");
     }
 
     private void Submit()
@@ -59,7 +58,7 @@ public partial class LoanInfo
         OpenCounterWithData();
     }
 
-    private void LoadDefulatValues()
+    private async Task LoadDefulatValues()
     {
         _loanAmount = 5000;
         _loanAmountMin = 1000;
@@ -87,41 +86,47 @@ public partial class LoanInfo
         };
 
         _apr = LoanHelper.CalculateXIRR(_loan);
-        CalculateInstallments();
+        await CalculateInstallments();
     }
 
-    private void LoanValueChanged(decimal value)
+    private async Task LoanValueChanged(decimal value)
     {
         _loanAmount = value;
         _loan!.Principal = _loanAmount;
         _loan!.Fee = _loan!.Principal * _fee;
-        CalculateInstallments();
+        await CalculateInstallments();
         StateHasChanged();
     }
 
-    private void LoanPeriodValueChanged(decimal value)
+    private async Task LoanPeriodValueChanged(decimal value)
     {
         _loanPeriod = value;
         _loan!.Installments = Convert.ToInt32(_loanPeriod);
-        CalculateInstallments();
+        await CalculateInstallments();
         StateHasChanged();
     }
 
-    private void ChangeDatePayment(DateTime? day)
+    private async Task ChangeDatePayment(DateTime? day)
     {
         if (day is not null)
         {
             _loan.DayOfDatePayment = day.Value.Day;
-            CalculateInstallments();
+            await CalculateInstallments();
             StateHasChanged();
         }
     }
 
-    private void CalculateInstallments()
+    private async Task CalculateInstallments()
     {
         _installmentListDto = LoanHelper.GetInstallmentList(_loan!);
         _firstInstallmentTotal = _installmentListDto.First().Total;
         _loan.InstallmentDtoList = _installmentListDto;
+
+        if (JS is not null)
+        {
+            var json = JsonSerializer.Serialize(_loan);
+            await JS.SetInLocalStorage(EncryptHelper.Encrypt("loan"), EncryptHelper.Encrypt(json));
+        }
     }
 
     private void LoanAmountPlus()

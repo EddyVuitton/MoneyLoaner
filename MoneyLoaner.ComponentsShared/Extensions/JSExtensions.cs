@@ -1,8 +1,8 @@
 ﻿using Microsoft.JSInterop;
 
-namespace MoneyLoaner.ComponentsShared.Helpers
+namespace MoneyLoaner.ComponentsShared.Extensions
 {
-    public static class JS
+    public static class JSExtensions
     {
         //https://www.udemy.com/course/programming-in-blazor-aspnet-core/learn/lecture/17136788#overview
         public static async ValueTask<object> SetInLocalStorage(this IJSRuntime js, string key, string content)

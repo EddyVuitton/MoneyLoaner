@@ -1,23 +1,30 @@
 ﻿using Microsoft.AspNetCore.Components;
+using Microsoft.JSInterop;
+using MoneyLoaner.ComponentsShared.Extensions;
 using MoneyLoaner.Data.DTOs;
-using MoneyLoaner.WebAPI.Data;
-using MoneyLoaner.WebAPI.Extensions;
+using MoneyLoaner.WebAPI.Helpers;
+using System.Text.Json;
 
 namespace MoneyLoaner.Components.Pages;
 
 public partial class Proposal
 {
-    [Inject] public StateContainer? StateContainer { get; set; }
-
-    [Parameter] public int SetHashCode { get; set; }
+    [Inject] public IJSRuntime? JS { get; set; }
 
     private LoanDto _loan = new();
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
-        if (StateContainer is not null)
+        if (JS is not null)
         {
-            _loan = StateContainer.GetRoutingObjectParameter<LoanDto>(SetHashCode);
+            var encryptedJson = await JS.GetFromLocalStorage(EncryptHelper.Encrypt("loan"));
+            var decryptedJson = EncryptHelper.Decrypt(encryptedJson.ToString());
+            var data = JsonSerializer.Deserialize<LoanDto>(decryptedJson);
+
+            if (data is not null)
+            {
+                _loan = data;
+            }
         }
     }
 }

@@ -63,12 +63,12 @@ public partial class LoanInfo
     {
         _loanAmount = 5000;
         _loanAmountMin = 1000;
-        _loanAmountMax = 100000;
+        _loanAmountMax = 25000;
         _loanAmountStep = 100;
 
-        _loanPeriod = 24;
-        _loanPeriodMin = 12;
-        _loanPeriodMax = 72;
+        _loanPeriod = 12;
+        _loanPeriodMin = 6;
+        _loanPeriodMax = 36;
         _loanPeriodStep = 3;
 
         _fee = 0.1351m;

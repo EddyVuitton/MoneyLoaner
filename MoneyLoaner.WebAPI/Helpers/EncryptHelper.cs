@@ -37,7 +37,7 @@ namespace MoneyLoaner.WebAPI.Helpers
             using MemoryStream msDecrypt = new(Convert.FromBase64String(cipherText));
             using CryptoStream csDecrypt = new(msDecrypt, decryptor, CryptoStreamMode.Read);
             using StreamReader srDecrypt = new(csDecrypt);
-            
+
             return srDecrypt.ReadToEnd();
         }
     }

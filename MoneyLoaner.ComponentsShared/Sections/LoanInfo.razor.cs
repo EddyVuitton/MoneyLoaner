@@ -1,11 +1,8 @@
 ﻿using Microsoft.AspNetCore.Components;
-using Microsoft.IdentityModel.Tokens;
 using Microsoft.JSInterop;
 using MoneyLoaner.ComponentsShared.Extensions;
 using MoneyLoaner.ComponentsShared.Helpers.Snackbar;
 using MoneyLoaner.Data.DTOs;
-using MoneyLoaner.WebAPI.Data;
-using MoneyLoaner.WebAPI.Extensions;
 using MoneyLoaner.WebAPI.Helpers;
 using MoneyLoaner.WebAPI.Services.ApplicationService;
 using System.Text.Json;
@@ -17,8 +14,6 @@ public partial class LoanInfo
     [Inject] public IApplicationService? ApplicationService { get; set; }
     [Inject] public ISnackbarHelper? SnackbarHelper { get; set; }
     [Inject] public IJSRuntime? JS { get; set; }
-    [Inject] public StateContainer? StateContainer { get; set; }
-    [Inject] public NavigationManager? NavigationManager { get; set; }
 
     private readonly DateTime _now = DateTime.Now;
 
@@ -36,10 +31,11 @@ public partial class LoanInfo
     private int _loanPeriodStep;
 
     private decimal _firstInstallmentTotal;
-    private decimal _apr;
+    private decimal _xirr;
     private decimal _fee;
     private decimal _interestRate;
     private DateTime? _DayOfDatePayment;
+    private DateTime _lastAPRCalculation;
 
     protected override async Task OnInitializedAsync()
     {
@@ -48,9 +44,23 @@ public partial class LoanInfo
         await LoadDefulatValues();
     }
 
-    public void NavigateToProposal()
+    protected override async Task OnAfterRenderAsync(bool isFirst)
     {
-        NavigationManager?.NavigateTo($"/Proposal/");
+        await base.OnAfterRenderAsync(isFirst);
+
+        var now = DateTime.Now;
+        var oneSecondPassed = (now - _lastAPRCalculation).TotalSeconds > 1;
+
+        if (oneSecondPassed)
+        {
+            CalculateXIRR();
+        }
+    }
+
+    public async void NavigateToProposal()
+    {
+        if (JS is not null)
+            await JS.InvokeVoidAsync("open", "/Proposal", "_blank");
     }
 
     private async Task LoadDefulatValues()
@@ -62,10 +72,10 @@ public partial class LoanInfo
 
         _loanPeriod = 12;
         _loanPeriodMin = 6;
-        _loanPeriodMax = 36;
+        _loanPeriodMax = 72;
         _loanPeriodStep = 3;
 
-        _fee = 0.1351m;
+        _fee = 0.16m;
         _interestRate = 0.1575m;
         _DayOfDatePayment = _now;
 
@@ -80,7 +90,8 @@ public partial class LoanInfo
             InterestRate = _interestRate
         };
 
-        _apr = LoanHelper.CalculateXIRR(_loan);
+        CalculateXIRR();
+
         await CalculateInstallments();
     }
 
@@ -154,5 +165,13 @@ public partial class LoanInfo
         {
             _loanPeriod -= _loanPeriodStep;
         }
+    }
+
+    private void CalculateXIRR()
+    {
+        _xirr = LoanHelper.CalculateXIRR(_loan);
+        _lastAPRCalculation = DateTime.Now;
+
+        StateHasChanged();
     }
 }

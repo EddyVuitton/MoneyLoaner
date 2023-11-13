@@ -32,16 +32,17 @@ public static class LoanHelper
         return Convert.ToDecimal(result);
     }
 
-    private static DateTime NextInstallmentDatePayment(DateTime previousDate, LoanDto loan)
+    private static DateTime NextInstallmentDatePayment(DateTime date, LoanDto loan)
     {
-        var endOfMonth = DateTime.DaysInMonth(previousDate.Year, previousDate.Month);
+        var nextMonth = date.AddMonths(1);
+        var endOfMonth = DateTime.DaysInMonth(nextMonth.Year, nextMonth.Month);
 
         if (loan.DayOfDatePayment > endOfMonth)
         {
-            return new DateTime(previousDate.Year, previousDate.Month, endOfMonth).AddMonths(1);
+            return new DateTime(nextMonth.Year, nextMonth.Month, endOfMonth);
         }
 
-        return new DateTime(previousDate.Year, previousDate.Month, loan.DayOfDatePayment).AddMonths(1);
+        return new DateTime(nextMonth.Year, nextMonth.Month, loan.DayOfDatePayment);
     }
 
     #endregion PrivateMethods

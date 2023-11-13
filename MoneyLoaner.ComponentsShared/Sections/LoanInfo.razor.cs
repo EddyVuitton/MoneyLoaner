@@ -48,14 +48,9 @@ public partial class LoanInfo
         await LoadDefulatValues();
     }
 
-    public void OpenCounterWithData()
+    public void NavigateToProposal()
     {
         NavigationManager?.NavigateTo($"/Proposal/");
-    }
-
-    private void Submit()
-    {
-        OpenCounterWithData();
     }
 
     private async Task LoadDefulatValues()

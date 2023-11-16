@@ -39,8 +39,8 @@
 </style>
 
 <div class="d-flex flex-column" style="width: 100%; height: 800px;">
-    <div class="d-flex justify-center" style="width: 100%; height: 100%;">
-        <div class="d-flex flex-column gap-y-4 section-wrapper" style="width: 30%; padding: 1% 1%; margin: 1% 0%;">
+    <div class="d-flex justify-center gap-x-8" style="width: 100%; height: 100%;">
+        <div class="d-flex flex-column gap-y-4 section-wrapper" style="width: 35%; padding: 1% 1%; margin: 1% 0%;">
             <div class="d-flex flex-column gap-y-2">
                 <div class="d-flex justify-center">
                     <span class="value-title">Ile potrzebujesz gotówki?</span>
@@ -111,12 +111,15 @@
                         <MudButton OnClick="NavigateToProposal"
                                    Variant="Variant.Filled"
                                    Color="Color.Primary"
-                                   Style="font-size: 1.1rem; color: white; padding: 3% 6%; border-radius: 10px;">
-                            Złóż wniosek
+                                   Style="font-size: 1rem; color: white; padding: 2% 4%; border-radius: 10px;">
+                            Potwierdź pożyczkę
                         </MudButton>
                     </div>
                 </div>
             </div>
+        </div>
+        <div class="section-wrapper" style="width: 35%; padding: 1% 1%; margin: 1% 0%;">
+            <ProposalForm />
         </div>
     </div>
     <MudDivider />

@@ -1,0 +1,72 @@
+﻿<MudCard Elevation="0" Class="d-flex flex-column" Style="width: 100%; height: 100%;">
+    <MudCardContent Style="width: 100%; height: 100%; padding: 0%; margin: 0%;">
+        <MudForm @ref="@form"
+                 Model="@model"
+                 Class="align-self-center"
+                 Style="width: 100%; height: 100%;"
+                 Validation="@(proposalValidator!.ValidateValues)">
+            <MudTabs Elevation="0"
+                     Class=""
+                     Style="width: 100%; height: 100%;"
+                     Centered="true"
+                     Rounded="true"
+                     ApplyEffectsToContainer="true"
+                     PanelClass="pa-6">
+                <MudTabPanel Text="Wstępna weryfikacja" Style="width: 100%; height: 100%;">
+                    <MudTextField @bind-Value="model!.Name"
+                                  For="@(() => model!.Name)"
+                                  Immediate="true"
+                                  Label="Imię" />
+
+                    <MudTextField @bind-Value="model.Surname"
+                                  For="@(() => model.Surname)"
+                                  Immediate="true"
+                                  Label="Nazwisko" />
+
+                    <MudTextField @bind-Value="model.PhoneNumber"
+                                  For="@(() => model.PhoneNumber)"
+                                  Mask="@(new PatternMask("000 000 000"))"
+                                  Immediate="true"
+                                  Label="Telefon komórkowy"
+                                  Adornment="Adornment.Start"
+                                  AdornmentText="+48" />
+
+                    <MudTextField @bind-Value="model.Email"
+                                  For="@(() => model.Email)"
+                                  Immediate="true"
+                                  Label="Email" />
+                </MudTabPanel>
+                <MudTabPanel Text="Źródło dochodu" Class="d-flex justify-center" Style="width: 100%; height: 100%;">
+                    <MudTextField @bind-Value="model!.MonthlyIncome"
+                                  For="@(() => model!.MonthlyIncome)"
+                                  Adornment="Adornment.End"
+                                  AdornmentText="zł"
+                                  Immediate="true"
+                                  Label="Dochody miesięczne na rękę"
+                                  Style="width: 50%;" />
+                    <MudTextField @bind-Value="model!.MonthlyExpenses"
+                                  For="@(() => model!.MonthlyExpenses)"
+                                  Adornment="Adornment.End"
+                                  AdornmentText="zł"
+                                  Immediate="true"
+                                  Label="Wydatki miesięczne"
+                                  Style="width: 50%;" />
+                </MudTabPanel>
+                <MudTabPanel Text="Metoda wypłaty pożyczki" Style="width: 100%; height: 100%;">
+                    <MudTextField @bind-Value="model!.CCNumber"
+                                  For="@(() => model!.CCNumber)"
+                                  Mask="@(new PatternMask("00 0000 0000 0000 0000 0000 0000"))"
+                                  Immediate="true"
+                                  Label="Numer konta" />
+                </MudTabPanel>
+            </MudTabs>
+        </MudForm>
+    </MudCardContent>
+    <MudCardActions Style="padding: 0%; margin: 2%;">
+        <MudButton OnClick="@(async () => await Submit())"
+                   Style="font-size: 1rem; color: white; padding: 2% 4%; border-radius: 10px;"
+                   Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto">
+            Złóż wniosek
+        </MudButton>
+    </MudCardActions>
+</MudCard>

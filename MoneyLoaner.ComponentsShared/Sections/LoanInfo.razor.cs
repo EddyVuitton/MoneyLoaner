@@ -15,6 +15,8 @@ public partial class LoanInfo
     [Inject] public ISnackbarHelper? SnackbarHelper { get; set; }
     [Inject] public IJSRuntime? JS { get; set; }
 
+    private ProposalForm? _proposalFormComponent;
+
     private readonly DateTime _now = DateTime.Now;
 
     private LoanDto _loan = new();
@@ -37,6 +39,12 @@ public partial class LoanInfo
     private DateTime? _DayOfDatePayment;
     private DateTime _lastAPRCalculation;
 
+    private bool _disabled = false;
+    private readonly string _activeBorderStyle = "border: 2px solid #594ae2;";
+    private readonly string _disableBorderStyle = "border: 1px solid #cccccc;";
+    private string _loanSectionWrapperBorderStyle = string.Empty;
+    private string _proposalSectionWrapperBorderStyle = string.Empty;
+
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
@@ -57,14 +65,28 @@ public partial class LoanInfo
         }
     }
 
-    public async void NavigateToProposal()
+    public void ConfirmProposal()
     {
-        if (JS is not null)
-            await JS.InvokeVoidAsync("open", "/Proposal", "_blank");
+        _proposalFormComponent?.EnableFields();
+        _disabled = !_disabled;
+        _loanSectionWrapperBorderStyle = _disableBorderStyle;
+        _proposalSectionWrapperBorderStyle = _activeBorderStyle;
+        StateHasChanged();
+    }
+
+    public void CorrectLoan()
+    {
+        _disabled = !_disabled;
+        _loanSectionWrapperBorderStyle = _activeBorderStyle;
+        _proposalSectionWrapperBorderStyle = _disableBorderStyle;
+        StateHasChanged();
     }
 
     private async Task LoadDefulatValues()
     {
+        _loanSectionWrapperBorderStyle = _activeBorderStyle;
+        _proposalSectionWrapperBorderStyle = _disableBorderStyle;
+
         _loanAmount = 5000;
         _loanAmountMin = 1000;
         _loanAmountMax = 25000;

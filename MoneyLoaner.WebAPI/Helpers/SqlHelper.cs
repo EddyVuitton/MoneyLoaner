@@ -1,35 +1,29 @@
 ﻿using Microsoft.Data.SqlClient;
 using System.Collections;
 using System.Data;
+using System.Globalization;
 
 namespace MoneyLoaner.WebAPI.Helpers;
 
 public static class SqlHelper
 {
-    public static object CreateParam(string name, object value, SqlDbType sqlType)
+    #region PublicMethods
+    public static async Task<Hashtable> ExecuteSqlQuerySingleAsync(string query, Hashtable parameters)
     {
-        return new SqlParameter()
-        {
-            ParameterName = name,
-            Value = value ?? DBNull.Value,
-            SqlDbType = sqlType
-        };
-    }
+        if (ConfigurationHelper.Config is null)
+            throw new Exception("Configuration is not initialized");
 
-    public static async Task<Hashtable> ExecuteSqlQuerySingleAsync(string query, Hashtable parameters = null)
-    {
         var connectionString = ConfigurationHelper.Config.GetSection("ConnectionStrings:LogicDatabaseConnection").Value;
 
         var dT = new DataTable();
-        using (var connection = new SqlConnection(connectionString))
-        {
-            await connection.OpenAsync();
+        using var connection = new SqlConnection(connectionString);
+        await connection.OpenAsync();
 
-            using var cmd = new SqlCommand(query, connection);
-            PrepareParams(cmd, parameters);
-            using var reader = await cmd.ExecuteReaderAsync();
-            dT.Load(reader);
-        }
+        using var cmd = new SqlCommand(query, connection);
+        PrepareParams(cmd, parameters);
+        using var reader = await cmd.ExecuteReaderAsync();
+        dT.Load(reader);
+        await connection.CloseAsync();
 
         var columns = dT.Columns;
         var rowCount = dT.Rows.Count;
@@ -37,6 +31,19 @@ public static class SqlHelper
 
         if (rowCount <= 1)
         {
+            foreach (object key in parameters.Keys)
+            {
+                var paramName = key.ToString() ?? string.Empty;
+
+                if (paramName.StartsWith("@out_", false, CultureInfo.CurrentCulture))
+                {
+                    var columnName = paramName;
+                    var row = cmd.Parameters[paramName].Value;
+
+                    hT.Add(columnName, row);
+                }
+            }
+
             if (rowCount == 0)
                 return hT;
 
@@ -47,15 +54,18 @@ public static class SqlHelper
 
                 hT.Add(columnName, row[columnName].ToString());
             }
+
+            return hT;
         }
         else
             throw new Exception($"Not expected more than 1 row");
-
-        return hT;
     }
 
-    public static async Task<List<Hashtable>> ExecuteSqlQueryMultiAsync(string query, Hashtable parameters = null)
+    public static async Task<List<Hashtable>> ExecuteSqlQueryMultiAsync(string query, Hashtable parameters)
     {
+        if (ConfigurationHelper.Config is null)
+            throw new Exception("Configuration is not initialized");
+
         var connectionString = ConfigurationHelper.Config.GetSection("ConnectionStrings:LogicDatabaseConnection").Value;
 
         var dT = new DataTable();
@@ -101,8 +111,15 @@ public static class SqlHelper
         return list;
     }
 
-    public static void PrepareParams(SqlCommand cmd, Hashtable parameters)
+    #endregion PublicMethods
+
+    #region PrivateMethods
+
+    private static void PrepareParams(SqlCommand cmd, Hashtable parameters)
     {
+        if (parameters is null)
+            return;
+
         foreach (object key in parameters.Keys)
         {
             SqlParameter param = new();
@@ -183,9 +200,9 @@ public static class SqlHelper
                 {
                     param.Value = DBNull.Value;
                 }
-                else if (pName.StartsWith("@OUT_", StringComparison.CurrentCulture))
+                else if (pName.StartsWith("@OUT_", true, CultureInfo.CurrentCulture))
                 {
-                    param.Direction = ParameterDirection.InputOutput;
+                    param.Direction = ParameterDirection.Output;
                     param.Value = parameters[key];
                     if (pSize != 0)
                     {
@@ -203,4 +220,6 @@ public static class SqlHelper
                 throw new Exception($"Unsupported type [{typeName}] for parameter [{pName}]");
         }
     }
+
+    #endregion PrivateMethods
 }

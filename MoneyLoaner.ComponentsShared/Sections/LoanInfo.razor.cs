@@ -5,6 +5,7 @@ using MoneyLoaner.ComponentsShared.Helpers.Snackbar;
 using MoneyLoaner.Data.DTOs;
 using MoneyLoaner.WebAPI.Helpers;
 using MoneyLoaner.WebAPI.Services.ApplicationService;
+using System.Net;
 using System.Text.Json;
 
 namespace MoneyLoaner.ComponentsShared.Sections;
@@ -15,12 +16,12 @@ public partial class LoanInfo
     [Inject] public ISnackbarHelper? SnackbarHelper { get; set; }
     [Inject] public IJSRuntime? JS { get; set; }
 
-    private ProposalForm? _proposalFormComponent;
-
     private readonly DateTime _now = DateTime.Now;
 
     private LoanDto _loan = new();
     private List<InstallmentDto> _installmentListDto = new();
+    private ProposalForm? _proposalFormComponent = new();
+    private NewProposalDto? _newProposalDto = new();
 
     private decimal _loanAmount;
     private decimal _loanAmountMin;
@@ -109,7 +110,8 @@ public partial class LoanInfo
             Installments = Convert.ToInt32(_loanPeriod),
             Principal = _loanAmount,
             Fee = _loanAmount * _fee,
-            InterestRate = _interestRate
+            InterestRate = _interestRate,
+            XIRR = _xirr
         };
 
         CalculateXIRR();
@@ -193,7 +195,30 @@ public partial class LoanInfo
     {
         _xirr = LoanHelper.CalculateXIRR(_loan);
         _lastAPRCalculation = DateTime.Now;
+        _loan.XIRR = _xirr;
 
         StateHasChanged();
+    }
+
+    public async Task SubmitNewProposal(ProposalDto proposalDto)
+    {
+        _proposalFormComponent?.EnableFields();
+        _proposalSectionWrapperBorderStyle = _disableBorderStyle;
+        StateHasChanged();
+
+        _newProposalDto = new() { LoanDto = _loan, ProposalDto = proposalDto };
+        
+        try
+        {
+            var customerRequest = await ApplicationService!.SubmitNewProposalAsync(_newProposalDto);
+
+            if (customerRequest.StatusCode != HttpStatusCode.OK)
+                throw new Exception(customerRequest.Message);
+        }
+        catch (Exception ex)
+        {
+            //...
+            return;
+        }
     }
 }

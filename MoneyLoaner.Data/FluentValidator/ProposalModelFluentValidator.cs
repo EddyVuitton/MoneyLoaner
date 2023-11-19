@@ -23,6 +23,10 @@ public class ProposalModelFluentValidator : AbstractValidator<ProposalDto>
             .NotEmpty()
             .WithMessage("Pole nie może być puste...");
 
+        RuleFor(x => x.PersonalNumber)
+            .NotEmpty()
+            .WithMessage("Pole nie może być puste...");
+
         RuleFor(x => x.Email)
             .Cascade(CascadeMode.Stop)
             .NotEmpty()
@@ -46,7 +50,9 @@ public class ProposalModelFluentValidator : AbstractValidator<ProposalDto>
 
         RuleFor(x => x.CCNumber)
             .NotEmpty()
-            .WithMessage("Pole nie może być puste...");
+            .WithMessage("Pole nie może być puste...")
+            .Length(26, 26)
+            .WithMessage("Podaj numer 26 cyfr...");
     }
 
     public Func<object, string, Task<IEnumerable<string>>> ValidateValues => async (model, propertyName) =>

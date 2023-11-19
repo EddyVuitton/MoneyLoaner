@@ -14,5 +14,6 @@ public static class WebAPIHelper
 
         builder.Services.AddWebAPI();
         builder.Services.AddSqlServer<DBContext>(builder.Configuration.GetConnectionString("LogicDatabaseConnection"));
+        ConfigurationHelper.Initialize(builder.Configuration);
     }
 }

@@ -10,8 +10,6 @@ public partial class DBContext : DbContext
     {
     }
 
-    public virtual DbSet<TestModelDto> TestModelDto { get; set; }
-
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         DataHelper.AddEntities(modelBuilder);

@@ -7,22 +7,7 @@ public class SnackbarHelper : ISnackbarHelper
 {
     [Inject] public ISnackbar Snackbar { get; set; }
 
-    public SnackbarHelper(ISnackbar snackbar)
-    {
-        Snackbar = snackbar;
-        LoadDeafulfConfiguration();
-    }
-
-    public void Show(string message, Severity s, bool hide = false, bool showDate = true)
-    {
-        var now = DateTime.Now;
-        var sNow = showDate ? $"[{now:yyyy-MM-dd HH:mm:ss}] " : string.Empty;
-
-        LoadHideConfiguration(hide);
-
-        Snackbar.Add($"{sNow}{message}", s);
-    }
-
+    #region PrivateMethods
     private void LoadDeafulfConfiguration()
     {
         Snackbar.Configuration.PreventDuplicates = false;
@@ -44,4 +29,23 @@ public class SnackbarHelper : ISnackbarHelper
             Snackbar.Configuration.ShowCloseIcon = true;
         }
     }
+    #endregion PrivateMethods
+
+    public SnackbarHelper(ISnackbar snackbar)
+    {
+        Snackbar = snackbar;
+        LoadDeafulfConfiguration();
+    }
+
+    #region PublicMethods
+    public void Show(string message, Severity s, bool hide = false, bool showDate = true)
+    {
+        var now = DateTime.Now;
+        var sNow = showDate ? $"[{now:yyyy-MM-dd HH:mm:ss}] " : string.Empty;
+
+        LoadHideConfiguration(hide);
+
+        Snackbar.Add($"{sNow}{message}", s);
+    }
+    #endregion PublicMethods
 }

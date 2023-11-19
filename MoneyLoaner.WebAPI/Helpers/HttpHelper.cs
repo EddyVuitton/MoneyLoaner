@@ -1,4 +1,5 @@
 ﻿using DebtWeb.WebAPI.Data;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace MoneyLoaner.WebAPI.Helpers;
 
@@ -21,6 +22,18 @@ public class HttpHelper
         var httpResponse = new HttpResponse<T>()
         {
             Data = data,
+            StatusCode = System.Net.HttpStatusCode.OK,
+            Message = string.Empty
+        };
+
+        return httpResponse;
+    }
+
+    public static HttpResponse<T> NullObject<T>()
+    {
+        var httpResponse = new HttpResponse<T>()
+        {
+            Data = default,
             StatusCode = System.Net.HttpStatusCode.OK,
             Message = string.Empty
         };

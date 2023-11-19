@@ -12,7 +12,4 @@
   <ItemGroup>
     <ProjectReference Include="..\MoneyLoaner.Data\MoneyLoaner.Data.csproj" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Data\Parameters\" />
-  </ItemGroup>
 </Project>

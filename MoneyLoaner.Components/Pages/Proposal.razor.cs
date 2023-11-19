@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
-using MoneyLoaner.ComponentsShared.Extensions;
 using MoneyLoaner.Data.DTOs;
+using MoneyLoaner.WebAPI.Extensions;
 using MoneyLoaner.WebAPI.Helpers;
 using System.Text.Json;
 

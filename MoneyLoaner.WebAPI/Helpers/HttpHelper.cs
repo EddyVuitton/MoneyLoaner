@@ -1,5 +1,4 @@
 ﻿using DebtWeb.WebAPI.Data;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace MoneyLoaner.WebAPI.Helpers;
 

@@ -230,7 +230,7 @@ begin
 	from pozyczka_klient
 	order by pk_data_dodania desc, pk_id desc
 
-	set @nowy_numer = (isnull(@nowy_numer, 0) + 100000) + 1;
+	set @nowy_numer = (isnull(@nowy_numer, 0) + 1000) + 1;
 
 	return '00' + cast(@nowy_numer as nvarchar(max));
 end

@@ -1,4 +1,5 @@
-﻿using MoneyLoaner.Server.Services;
+﻿using MoneyLoaner.Server.Extentions;
+using MoneyLoaner.WebAPI.Extensions;
 using MudBlazor.Services;
 
 namespace MoneyLoaner.Server.Helpers
@@ -10,7 +11,9 @@ namespace MoneyLoaner.Server.Helpers
             builder.Services.AddRazorPages();
             builder.Services.AddServerSideBlazor();
             builder.Services.AddMudServices();
-            builder.Services.AddDebcior();
+
+            builder.Services.AddServerServices();
+            builder.Services.AddAuthServices();
         }
     }
 }

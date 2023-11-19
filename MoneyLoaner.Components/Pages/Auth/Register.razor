@@ -1,1 +1,30 @@
-﻿
+﻿@page "/register/"
+
+<div class="d-flex justify-center" style="width: 100%; border: 2px solid red;">
+    <div class="" style="width: 500px;">
+        <EditForm Model="@_model" OnValidSubmit="OnValidSubmit" style="width: 100%;">
+            <DataAnnotationsValidator />
+            <MudCard>
+                <MudCardContent>
+                    <MudTextField @bind-Value="_model.PersonalNumber"
+                                  Label="Numer pesel"
+                                  For="@(() => _model.PersonalNumber)"
+                                  ReadOnly=true />
+                    <MudTextField @bind-Value="_model.Email"
+                                  Label="Adres email"
+                                  For="@(() => _model.Email)"
+                                  ReadOnly=true />
+                    <MudTextField @bind-Value="_model.Password"
+                                  Label="Password" HelperText="Wybierz silne hasło" Class="mt-3"
+                                  For="@(() => _model.Password)" InputType="InputType.Password" />
+                    <MudTextField @bind-Value="_model.Password2"
+                                  Label="Password" HelperText="Powtórz hasło" Class="mt-3"
+                                  For="@(() => _model.Password2)" InputType="InputType.Password" />
+                </MudCardContent>
+                <MudCardActions>
+                    <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto">Stwórz konto</MudButton>
+                </MudCardActions>
+            </MudCard>
+        </EditForm>
+    </div>
+</div>

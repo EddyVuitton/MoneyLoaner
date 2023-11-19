@@ -18,7 +18,7 @@ public partial class ProposalForm
     private MudForm? _form;
     private ProposalDto? _proposalDto;
     private ProposalModelFluentValidator? _proposalValidator;
- 
+
     private bool _disabled = true;
 
     protected override async Task OnInitializedAsync()

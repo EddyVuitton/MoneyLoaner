@@ -2,7 +2,6 @@
 using MoneyLoaner.Data.DTOs;
 using MoneyLoaner.WebAPI.Helpers;
 using System.Collections;
-using System.Numerics;
 
 namespace MoneyLoaner.WebAPI.BusinessLogic.Loan;
 
@@ -26,16 +25,16 @@ public class LoanBusinessLogic : ILoanBusinessLogic
             throw new Exception("");
 
         //przygotuj id klienta
-        var customerId = await GetCustomerId(proposal);
+        var customerId = await GetCustomerIdAsync(proposal);
 
         //dodaj rachunek bankowy, na który zostanie wypłacona pożyczka
-        var bankAccountId = await GetCCNumberId();
+        var bankAccountId = await GetCCNumberIdAsync();
 
         //dodaj nowy dług klienta
-        var loanId = await GetLoanId(customerId, bankAccountId);
+        var loanId = await GetLoanIdAsync(customerId, bankAccountId);
 
         //dodaj nowy wniosek
-        var proposalId = await AddNewProposal(loan, proposal, loanId);
+        var proposalId = await AddNewProposalAsync(loan, proposal, loanId);
 
         return new Hashtable();
     }
@@ -44,7 +43,7 @@ public class LoanBusinessLogic : ILoanBusinessLogic
 
     #region PrivateMethods
 
-    private static async Task<int> GetCustomerId(ProposalDto proposal)
+    private static async Task<int> GetCustomerIdAsync(ProposalDto proposal)
     {
         var hT = new Hashtable
         {
@@ -73,11 +72,10 @@ public class LoanBusinessLogic : ILoanBusinessLogic
             pk_id = int.Parse(customerInfo["pk_id"]!.ToString()!);
         }
 
-
         return pk_id;
     }
 
-    private static async Task<int> GetLoanId(int customerId, int bankAccountId)
+    private static async Task<int> GetLoanIdAsync(int customerId, int bankAccountId)
     {
         var hT = new Hashtable
         {
@@ -87,11 +85,11 @@ public class LoanBusinessLogic : ILoanBusinessLogic
         };
 
         var newLoanId = await SqlHelper.ExecuteSqlQuerySingleAsync("exec p_pozyczka_dlug_dodaj @rb_id, @pk_id, @out_id out;", hT);
-                                                                                                
-        return int.Parse(newLoanId["@out_id"]!.ToString()!);                        
+
+        return int.Parse(newLoanId["@out_id"]!.ToString()!);
     }
 
-    private static async Task<int> GetCCNumberId()
+    private static async Task<int> GetCCNumberIdAsync()
     {
         var ccNumber = GenerateRandomCCNumber();
 
@@ -106,7 +104,7 @@ public class LoanBusinessLogic : ILoanBusinessLogic
         return int.Parse(newBankAccountNumber["@out_id"]!.ToString()!);
     }
 
-    private static async Task<int> AddNewProposal(LoanDto loan, ProposalDto proposal, int loanId)
+    private static async Task<int> AddNewProposalAsync(LoanDto loan, ProposalDto proposal, int loanId)
     {
         var hT = new Hashtable
         {

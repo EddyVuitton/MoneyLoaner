@@ -1,5 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using MoneyLoaner.Data.DTOs;
 using MoneyLoaner.Data.Helpers;
 
 namespace MoneyLoaner.Data.Context;

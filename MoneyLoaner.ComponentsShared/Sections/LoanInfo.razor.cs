@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
-using MoneyLoaner.ComponentsShared.Extensions;
 using MoneyLoaner.ComponentsShared.Helpers.Snackbar;
 using MoneyLoaner.Data.DTOs;
+using MoneyLoaner.WebAPI.Extensions;
 using MoneyLoaner.WebAPI.Helpers;
 using MoneyLoaner.WebAPI.Services.ApplicationService;
 using System.Net;
@@ -15,6 +15,7 @@ public partial class LoanInfo
     [Inject] public IApplicationService? ApplicationService { get; set; }
     [Inject] public ISnackbarHelper? SnackbarHelper { get; set; }
     [Inject] public IJSRuntime? JS { get; set; }
+    [Inject] public NavigationManager? NavigationManager { get; set; }
 
     private readonly DateTime _now = DateTime.Now;
 
@@ -45,6 +46,8 @@ public partial class LoanInfo
     private readonly string _disableBorderStyle = "border: 1px solid #cccccc;";
     private string _loanSectionWrapperBorderStyle = string.Empty;
     private string _proposalSectionWrapperBorderStyle = string.Empty;
+
+    private bool _submitProposalLoading = false;
 
     protected override async Task OnInitializedAsync()
     {
@@ -200,14 +203,27 @@ public partial class LoanInfo
         StateHasChanged();
     }
 
+    private async Task StoreDataInLocalStorage(NewProposalDto newProposal)
+    {
+        if (JS is not null)
+        {
+            var json = JsonSerializer.Serialize(newProposal);
+            await JS.SetInLocalStorage(EncryptHelper.Encrypt("newproposal"), EncryptHelper.Encrypt(json));
+        }
+    }
+
     public async Task SubmitNewProposal(ProposalDto proposalDto)
     {
         _proposalFormComponent?.EnableFields();
         _proposalSectionWrapperBorderStyle = _disableBorderStyle;
         StateHasChanged();
+        _submitProposalLoading = true;
 
         _newProposalDto = new() { LoanDto = _loan, ProposalDto = proposalDto };
-        
+        await StoreDataInLocalStorage(_newProposalDto);
+
+        await Task.Delay(3000);
+
         try
         {
             var customerRequest = await ApplicationService!.SubmitNewProposalAsync(_newProposalDto);
@@ -220,5 +236,7 @@ public partial class LoanInfo
             //...
             return;
         }
+
+        NavigationManager?.NavigateTo("register");
     }
 }

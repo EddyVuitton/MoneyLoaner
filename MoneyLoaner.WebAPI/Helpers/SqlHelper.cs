@@ -8,6 +8,7 @@ namespace MoneyLoaner.WebAPI.Helpers;
 public static class SqlHelper
 {
     #region PublicMethods
+
     public static async Task<Hashtable> ExecuteSqlQuerySingleAsync(string query, Hashtable parameters)
     {
         if (ConfigurationHelper.Config is null)

@@ -10,7 +10,8 @@ namespace MoneyLoaner.WebAPI.Services.ApplicationService;
 public class ApplicationService : IApplicationService
 {
     private readonly HttpClient _httpClient;
-    private const string _URL = "api/Loan";
+    private const string _LOANAPI = "api/Loan";
+    private const string _ACCOUNTAPI = "api/Account";
 
     public ApplicationService(HttpClient httpClient)
     {
@@ -21,7 +22,7 @@ public class ApplicationService : IApplicationService
     {
         var json = JsonConvert.SerializeObject(newProposalDto);
         var content = new StringContent(json, Encoding.UTF8, "application/json");
-        var response = await _httpClient.PostAsync($"{_URL}/SubmitNewProposalAsync", content);
+        var response = await _httpClient.PostAsync($"{_LOANAPI}/SubmitNewProposalAsync", content);
 
         var responseContent = await response.Content.ReadAsStringAsync();
         var deserialisedResponse = JsonConvert.DeserializeObject<HttpResponse<Hashtable>>(responseContent);

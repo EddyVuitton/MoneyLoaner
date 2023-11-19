@@ -1,6 +1,6 @@
 ﻿using Microsoft.JSInterop;
 
-namespace MoneyLoaner.ComponentsShared.Extensions
+namespace MoneyLoaner.WebAPI.Extensions
 {
     public static class JSExtensions
     {

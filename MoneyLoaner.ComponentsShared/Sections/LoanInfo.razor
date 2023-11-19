@@ -124,6 +124,15 @@
             <ProposalForm @ref="_proposalFormComponent" ParamCorrectLoan="CorrectLoan" ParamSubmitNewProposal="SubmitNewProposal" />
         </div>
     </div>
+    @if (_submitProposalLoading)
+    {
+        <div class="d-flex justify-center gap-x-8" style="width: 100%; height: 100%;">
+            <div class="d-flex flex-column" style="width: 60%;">
+                <MudText>Trwa przetwarzanie wniosku, proszę czekać...</MudText>
+                <MudProgressLinear Class="" Style="margin: 1% 0%;" Color="Color.Primary" Indeterminate="true" />
+            </div>
+        </div>
+    }
     <MudDivider />
     <div class="d-flex justify-center" style="width: 100%; height: 100%;">
         <LoanDetails LoanDto="_loan"

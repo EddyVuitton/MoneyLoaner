@@ -8,6 +8,7 @@ public class SnackbarHelper : ISnackbarHelper
     [Inject] public ISnackbar Snackbar { get; set; }
 
     #region PrivateMethods
+
     private void LoadDeafulfConfiguration()
     {
         Snackbar.Configuration.PreventDuplicates = false;
@@ -29,6 +30,7 @@ public class SnackbarHelper : ISnackbarHelper
             Snackbar.Configuration.ShowCloseIcon = true;
         }
     }
+
     #endregion PrivateMethods
 
     public SnackbarHelper(ISnackbar snackbar)
@@ -38,6 +40,7 @@ public class SnackbarHelper : ISnackbarHelper
     }
 
     #region PublicMethods
+
     public void Show(string message, Severity s, bool hide = false, bool showDate = true)
     {
         var now = DateTime.Now;
@@ -47,5 +50,6 @@ public class SnackbarHelper : ISnackbarHelper
 
         Snackbar.Add($"{sNow}{message}", s);
     }
+
     #endregion PublicMethods
 }

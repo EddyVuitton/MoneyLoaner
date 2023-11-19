@@ -1,5 +1,5 @@
 ﻿using MoneyLoaner.Data.Context;
-using MoneyLoaner.WebAPI.Services;
+using MoneyLoaner.WebAPI.Extensions;
 
 namespace MoneyLoaner.WebAPI.Helpers;
 
@@ -12,7 +12,7 @@ public static class WebAPIHelper
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen();
 
-        builder.Services.AddWebAPI();
+        builder.Services.AddBusinessLogic();
         builder.Services.AddSqlServer<DBContext>(builder.Configuration.GetConnectionString("LogicDatabaseConnection"));
         ConfigurationHelper.Initialize(builder.Configuration);
     }

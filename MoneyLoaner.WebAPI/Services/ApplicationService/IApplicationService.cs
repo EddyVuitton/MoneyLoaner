@@ -6,5 +6,5 @@ namespace MoneyLoaner.WebAPI.Services.ApplicationService;
 
 public interface IApplicationService
 {
-    Task<HttpResponse<Hashtable>> SubmitNewProposalAsync(NewProposalDto newProposalDto);
+    Task<HttpApiResponseT<Hashtable>> SubmitNewProposalAsync(NewProposalDto newProposalDto);
 }

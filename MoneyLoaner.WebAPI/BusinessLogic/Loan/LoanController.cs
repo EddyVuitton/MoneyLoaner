@@ -22,7 +22,7 @@ public class LoanController : ControllerBase
     }
 
     [HttpPost("SubmitNewProposalAsync")]
-    public async Task<HttpResponse<Hashtable>> SubmitNewProposalAsync(NewProposalDto newProposalDto)
+    public async Task<HttpApiResponseT<Hashtable>> SubmitNewProposalAsync(NewProposalDto newProposalDto)
     {
         try
         {
@@ -32,6 +32,21 @@ public class LoanController : ControllerBase
         catch (Exception e)
         {
             return HttpHelper.Error<Hashtable>(e);
+        }
+    }
+
+    [HttpPost("Test")]
+    public async Task<HttpApiResponse> Test(int x)
+    {
+        try
+        {
+            //var y = 1 / (x - x);
+
+            return HttpHelper.Ok();
+        }
+        catch (Exception ex)
+        {
+            return HttpHelper.Error(ex);
         }
     }
 }

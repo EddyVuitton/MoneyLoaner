@@ -18,15 +18,15 @@ public class ApplicationService : IApplicationService
         _httpClient = httpClient;
     }
 
-    public async Task<HttpResponse<Hashtable>> SubmitNewProposalAsync(NewProposalDto newProposalDto)
+    public async Task<HttpApiResponseT<Hashtable>> SubmitNewProposalAsync(NewProposalDto newProposalDto)
     {
         var json = JsonConvert.SerializeObject(newProposalDto);
         var content = new StringContent(json, Encoding.UTF8, "application/json");
         var response = await _httpClient.PostAsync($"{_LOANAPI}/SubmitNewProposalAsync", content);
 
         var responseContent = await response.Content.ReadAsStringAsync();
-        var deserialisedResponse = JsonConvert.DeserializeObject<HttpResponse<Hashtable>>(responseContent);
+        var deserialisedResponse = JsonConvert.DeserializeObject<HttpApiResponseT<Hashtable>>(responseContent);
 
-        return deserialisedResponse ?? HttpHelper.NullObject<Hashtable>();
+        return deserialisedResponse ?? HttpHelper.Null<Hashtable>();
     }
 }

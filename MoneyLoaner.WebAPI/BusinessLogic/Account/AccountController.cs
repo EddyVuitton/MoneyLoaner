@@ -33,7 +33,7 @@ public class AccountController : ControllerBase
     }
 
     [HttpPost("Login")]
-    public async Task<HttpResponse<UserToken>> Login(AccountDto account)
+    public async Task<HttpApiResponseT<UserToken>> Login(AccountDto account)
     {
         if (account is null || account.UserEmail is null || account.UserPassword is null)
             return HttpHelper.Error<UserToken>(new Exception("Niepoprawna próba logowania"));

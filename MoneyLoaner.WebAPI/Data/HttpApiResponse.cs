@@ -2,9 +2,9 @@
 
 namespace DebtWeb.WebAPI.Data;
 
-public class HttpResponse<T>
+public class HttpApiResponse
 {
     public HttpStatusCode StatusCode { get; set; }
     public string? Message { get; set; }
-    public T? Data { get; set; }
+    public bool IsSucces { get; set; }
 }

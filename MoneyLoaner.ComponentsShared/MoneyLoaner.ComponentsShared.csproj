@@ -15,4 +15,7 @@
 	  <ProjectReference Include="..\MoneyLoaner.Data\MoneyLoaner.Data.csproj" />
 	  <ProjectReference Include="..\MoneyLoaner.WebAPI\MoneyLoaner.WebAPI.csproj" />
 	</ItemGroup>
+	<ItemGroup>
+	  <Folder Include="wwwroot\" />
+	</ItemGroup>
 </Project>

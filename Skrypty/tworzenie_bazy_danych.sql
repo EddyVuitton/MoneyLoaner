@@ -180,10 +180,6 @@ create table ksiegowanie_typ (
 );
 go
 
-insert into ksiegowanie_typ (kst_nazwa) values
-('obci¹¿enie'), ('sp³ata');
-go
-
 create table ksiegowanie (
 	ks_id int primary key identity(1, 1),
 	ks_por_id int null foreign key references pozyczka_rata (por_id),
@@ -205,15 +201,6 @@ create table ksiegowanie_konto (
 );
 go
 
-insert into ksiegowanie_konto (ksk_nazwa, ksk_czy_techniczne) values
-('techniczne', 1),
-('wp³ata', 1),
-('kapita³', 0),
-('prowizja', 0),
-('odsetki', 0),
-('umorzenie', 1);
-go
-
 create table ksiegowanie_konto_subkonto (
 	ksksub_id int primary key identity(1, 1),
 	ksksub_ksk_id int not null foreign key references ksiegowanie_konto (ksk_id),
@@ -221,13 +208,6 @@ create table ksiegowanie_konto_subkonto (
 	aud_data datetime default getdate(),
 	aud_login nvarchar(max) default suser_name()
 );
-go
-
-insert into ksiegowanie_konto_subkonto (ksksub_ksk_id, ksksub_nazwa) values
-(2, 'Przelew'),
-(4, 'Prowizja administracyjna'),
-(5, 'Odsetki umowne'),
-(6, 'Zni¿ka/Rabat');
 go
 
 create table ksiegowanie_dekret (
@@ -260,7 +240,7 @@ begin --tworzenie shadow loga
 	while (@i < @c)
 	begin
 		declare @table nvarchar(max) = (select top 1 table_name from #tabele);
-		declare @create_table_skrypt nvarchar(max) = 'select * into money_loaner_shdlog..' + @table + ' from ' + @table;
+		declare @create_table_skrypt nvarchar(max) = 'select top 0 * into money_loaner_shdlog..' + @table + ' from ' + @table + '; alter table money_loaner_shdlog..' + @table + ' add aud_oper char;';
 
 		exec (@create_table_skrypt);
 		
@@ -299,11 +279,32 @@ begin
 		from ' + @table + '
 		join inserted on inserted.' + @column + ' = ' + @table + '.' + @column + '
 	end
-end'
+end';		
 		exec (@trigger_skrypt);
 		delete #triggery where table_name = @table;
 		set @i = @i + 1;
 	end
+end;
+go
+
+begin --uzupe³nienie s³owników
+	insert into ksiegowanie_typ (kst_nazwa) values
+	('obci¹¿enie'), ('sp³ata');
+		
+	insert into ksiegowanie_konto (ksk_nazwa, ksk_czy_techniczne) values
+	('techniczne', 1),
+	('wp³ata', 1),
+	('kapita³', 0),
+	('prowizja', 0),
+	('odsetki', 0),
+	('umorzenie', 1);
+	
+	insert into ksiegowanie_konto_subkonto (ksksub_ksk_id, ksksub_nazwa) values
+	(2, 'Przelew'),
+	(4, 'Prowizja administracyjna'),
+	(5, 'Odsetki umowne'),
+	(6, 'Zni¿ka/Rabat');
+	
 end;
 go
 
@@ -361,7 +362,7 @@ begin
 
 	set @nowy_numer = (isnull(@nowy_numer, 0) + 1000) + 1;
 
-	return '00' + cast(@nowy_numer as nvarchar(max));
+	return '100' + cast(@nowy_numer as nvarchar(max));
 end;
 go
 

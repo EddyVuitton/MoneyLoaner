@@ -5,7 +5,7 @@ using MoneyLoaner.Data.DTOs;
 using MoneyLoaner.WebAPI.Extensions;
 using MoneyLoaner.WebAPI.Helpers;
 using MoneyLoaner.WebAPI.Services.ApplicationService;
-using System.Net;
+using MudBlazor;
 using System.Text.Json;
 
 namespace MoneyLoaner.ComponentsShared.Sections;
@@ -216,8 +216,8 @@ public partial class LoanInfo
     {
         _proposalFormComponent?.EnableFields();
         _proposalSectionWrapperBorderStyle = _disableBorderStyle;
-        StateHasChanged();
         _submitProposalLoading = true;
+        StateHasChanged();
 
         _newProposalDto = new() { LoanDto = _loan, ProposalDto = proposalDto };
         await StoreDataInLocalStorage(_newProposalDto);
@@ -226,17 +226,29 @@ public partial class LoanInfo
 
         try
         {
-            var customerRequest = await ApplicationService!.SubmitNewProposalAsync(_newProposalDto);
+            var newProposal = await ApplicationService!.SubmitNewProposalAsync(_newProposalDto);
 
-            if (customerRequest.StatusCode != HttpStatusCode.OK)
-                throw new Exception(customerRequest.Message);
+            if (!newProposal.IsSucces)
+            {
+                throw new Exception(newProposal.Message!);
+            }
+
+            var customerInfo = await ApplicationService!.GetUserAccountAsync(proposalDto.Email!);
+
+            if (customerInfo.IsSuccess && customerInfo.Data is not null)
+            {
+                NavigationManager?.NavigateTo("login");
+            }
+            else
+            {
+                NavigationManager?.NavigateTo("register");
+            }
         }
         catch (Exception ex)
         {
-            //...
-            return;
+            SnackbarHelper!.Show(ex.Message, Severity.Error);
+            _submitProposalLoading = false;
+            StateHasChanged();
         }
-
-        NavigationManager?.NavigateTo("register");
     }
 }

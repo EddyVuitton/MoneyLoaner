@@ -2,7 +2,6 @@
 
 public interface ILoginService
 {
-    public Task LoginAsync(string token, string email);
-
+    public Task LoginAsync(string token);
     public Task LogoutAsync();
 }

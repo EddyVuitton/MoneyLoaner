@@ -1,4 +1,5 @@
 use master;
+go
 
 begin
 	--https://stackoverflow.com/a/7469167
@@ -6,7 +7,7 @@ begin
 
 	select @sql_drop_all_connections = coalesce(@sql_drop_all_connections,'') + 'kill ' + convert(varchar, spid) + ';'
 	from master..sysprocesses
-	where dbid in (db_id('money_loaner_data'), db_id('money_loaner_logic')) AND spid <> @@spid
+	where dbid in (db_id('money_loaner_data'), db_id('money_loaner_logic'), db_id('money_loaner_shdlog')) AND spid <> @@spid
 
 	exec (@sql_drop_all_connections);
 
@@ -22,7 +23,14 @@ begin
 		set @exec = concat('drop database ', 'money_loaner_logic');
 		exec (@exec);
 	end
-end
+
+	if db_id('money_loaner_shdlog') is not null
+	begin
+		set @exec = concat('drop database ', 'money_loaner_shdlog');
+		exec (@exec);
+	end
+end;
+go
 
 create database money_loaner_data;
 go
@@ -52,13 +60,13 @@ create table pozyczka_klient (
 );
 go
 
-create table user_account (
-	us_id int primary key identity(1, 1),
-	us_email nvarchar(max) not null,
-	us_haslo nvarchar(max) not null,
-	us_data_dodania datetime not null,
-	us_czy_aktywne bit not null,
-	us_pk_id int not null foreign key references pozyczka_klient (pk_id),
+create table uzytkownik_konto (
+	uk_id int primary key identity(1, 1),
+	uk_email nvarchar(max) not null,
+	uk_haslo nvarchar(max) not null,
+	uk_data_dodania datetime not null,
+	uk_czy_aktywne bit not null,
+	uk_pk_id int not null foreign key references pozyczka_klient (pk_id),
 	aud_data datetime default getdate(),
 	aud_login nvarchar(max) default suser_name()
 );
@@ -133,7 +141,7 @@ create table pozyczka_szczegoly_oferty (
 	pszo_rata_od decimal(18, 2) not null,
 	pszo_data_pierwszej_raty date not null,
 	pszo_rrso decimal(18, 2) not null,
-	pszo_okres_splaty decimal(18, 2) not null,
+	pszo_okres_splaty int not null,
 	pszo_kwota_wnioskowana decimal(18, 2) not null,
 	pszo_prowizja decimal(18, 2) not null,
 	pszo_odsetki decimal(18, 2) not null,
@@ -142,6 +150,126 @@ create table pozyczka_szczegoly_oferty (
 	aud_data datetime default getdate(),
 	aud_login nvarchar(max) default suser_name()
 );
+go
+
+create table pozyczka (
+	po_id int primary key identity(1, 1),
+	po_pd_id int not null foreign key references pozyczka_dlug (pd_id),
+	po_nazwa nvarchar(max) not null,
+	po_data_dodania datetime not null,
+	aud_data datetime default getdate(),
+	aud_login nvarchar(max) default suser_name()
+);
+go
+
+create table pozyczka_rata (
+	por_id int primary key identity(1, 1),
+	por_po_id int not null foreign key references pozyczka (po_id),
+	por_numer int not null,
+	por_data_wymagalnosci datetime not null,
+	aud_data datetime default getdate(),
+	aud_login nvarchar(max) default suser_name()
+);
+go
+
+create table ksiegowanie_typ (
+	kst_id int primary key identity(1, 1),
+	kst_nazwa nvarchar(max) not null,
+	aud_data datetime default getdate(),
+	aud_login nvarchar(max) default suser_name()
+);
+go
+
+insert into ksiegowanie_typ (kst_nazwa) values
+('obci¹¿enie'), ('sp³ata');
+go
+
+create table ksiegowanie (
+	ks_id int primary key identity(1, 1),
+	ks_por_id int null foreign key references pozyczka_rata (por_id),
+	ks_data_dodania datetime not null,
+	ks_data_operacji datetime not null,
+	ks_kst_id int not null foreign key references ksiegowanie_typ (kst_id),
+	ks_uwagi nvarchar(max) null,
+	aud_data datetime default getdate(),
+	aud_login nvarchar(max) default suser_name()
+);
+go
+
+create table ksiegowanie_konto (
+	ksk_id int primary key identity(1, 1),
+	ksk_nazwa nvarchar(max) not null,
+	ksk_czy_techniczne bit not null,
+	aud_data datetime default getdate(),
+	aud_login nvarchar(max) default suser_name()
+);
+go
+
+insert into ksiegowanie_konto (ksk_nazwa, ksk_czy_techniczne) values
+('techniczne', 1),
+('wp³ata', 1),
+('kapita³', 0),
+('prowizja', 0),
+('odsetki', 0),
+('umorzenie', 1);
+go
+
+create table ksiegowanie_konto_subkonto (
+	ksksub_id int primary key identity(1, 1),
+	ksksub_ksk_id int not null foreign key references ksiegowanie_konto (ksk_id),
+	ksksub_nazwa nvarchar(max) not null,
+	aud_data datetime default getdate(),
+	aud_login nvarchar(max) default suser_name()
+);
+go
+
+insert into ksiegowanie_konto_subkonto (ksksub_ksk_id, ksksub_nazwa) values
+(2, 'Przelew'),
+(4, 'Prowizja administracyjna'),
+(5, 'Odsetki umowne'),
+(6, 'Zni¿ka/Rabat');
+go
+
+create table ksiegowanie_dekret (
+	ksd_id int primary key identity(1, 1),
+	ksd_ks_id int not null foreign key references ksiegowanie (ks_id),
+	ksd_por_id int not null foreign key references pozyczka_rata (por_id),
+	ksd_ksk_id int not null foreign key references ksiegowanie_konto (ksk_id),
+	ksd_ksksub_id int null foreign key references ksiegowanie_konto_subkonto (ksksub_id),
+	ksd_kwota_wn decimal(18, 2) not null,
+	ksd_kwota_ma decimal(18, 2) not null,
+	ksd_rb_id int null foreign key references rachunek_bankowy (rb_id),
+	aud_data datetime default getdate(),
+	aud_login nvarchar(max) default suser_name(),
+	check ((ksd_kwota_wn = 0 and ksd_kwota_ma != 0) or (ksd_kwota_wn != 0 and ksd_kwota_ma = 0))
+);
+go
+
+create database money_loaner_shdlog;
+go
+
+begin --tworzenie shadow loga
+	drop table if exists #tabele;
+	select  t.name table_name
+	into #tabele
+	from sys.tables t
+
+	declare @c int = (select count(1) from #tabele);
+	declare @i int = 0;
+
+	while (@i < @c)
+	begin
+		declare @table nvarchar(max) = (select top 1 table_name from #tabele);
+		declare @create_table_skrypt nvarchar(max) = 'select * into money_loaner_shdlog..' + @table + ' from ' + @table;
+
+		exec (@create_table_skrypt);
+		
+		delete #tabele where table_name = @table;
+		set @i = @i + 1;
+	end
+
+	-- ... to do ...
+end;
 go
 
 begin --tworzenie triggerów
@@ -176,13 +304,14 @@ end'
 		delete #triggery where table_name = @table;
 		set @i = @i + 1;
 	end
-end
+end;
 go
 
 create database money_loaner_logic;
 go
 
 use money_loaner_logic;
+go
 
 begin --tworzenie synonimów
 	drop table if exists #synonimy;
@@ -203,9 +332,9 @@ begin --tworzenie synonimów
 		delete #synonimy where table_name = @table;
 		set @i = @i + 1;
 	end
-end
-
+end;
 go
+
 create or alter procedure p_klient_pobierz @pesel varchar(11)
 as
 begin
@@ -233,22 +362,141 @@ begin
 	set @nowy_numer = (isnull(@nowy_numer, 0) + 1000) + 1;
 
 	return '00' + cast(@nowy_numer as nvarchar(max));
-end
+end;
 go
 
-create or alter procedure p_klient_dodaj
+create or alter procedure p_pozyczka_klient_aktualizuj
 	@imie nvarchar(max),
 	@nazwisko nvarchar(max),
 	@pesel varchar(11),
+	@email nvarchar(max),
+	@numer_telefonu varchar(max),
 	@out_id int output
 as
 begin
 	declare @nowy_numer nvarchar(max) = dbo.f_pobierz_nowy_numer_klienta();
+	declare @now datetime = getdate();
+	declare @pk_id int = (select top 1 pk_id from pozyczka_klient where pk_pesel = @pesel);
 
-	insert into pozyczka_klient (pk_numer, pk_imie, pk_nazwisko, pk_pesel, pk_data_dodania)
-	values (@nowy_numer, @imie, @nazwisko, @pesel, getdate());
+	if (isnull(@pk_id, 0) = 0)
+	begin
+		insert into pozyczka_klient (pk_numer, pk_imie, pk_nazwisko, pk_pesel, pk_data_dodania)
+		values (@nowy_numer, @imie, @nazwisko, @pesel, @now);
 
-	set @out_id = scope_identity();
+		set @out_id = scope_identity();
+
+		insert into email (em_pk_id, em_nazwa, em_data_dodania, em_data_zakonczenia)
+		values (@out_id, @email, @now, null);
+
+		insert into telefon (tn_pk_id, tn_nazwa, tn_data_dodania, tn_data_zakonczenia)
+		values (@out_id, @numer_telefonu, @now, null);
+	end
+	else
+	begin
+		exec p_klient_email_aktualizuj @pk_id, @email;
+		exec p_klient_telefon_aktualizuj @pk_id, @numer_telefonu;
+
+		set @out_id = @pk_id;
+	end
+end;
+go
+
+create or alter procedure p_klient_email_aktualizuj
+	@pk_id int,
+	@email nvarchar(max)
+as
+begin
+	declare @aktualny_email nvarchar(max) = (select em_nazwa from email where em_pk_id = @pk_id and em_data_zakonczenia is null);
+	declare @now datetime = getdate();
+
+	if (@aktualny_email is null)
+	begin
+		insert into email (em_pk_id, em_nazwa, em_data_dodania, em_data_zakonczenia)
+		values (@pk_id, @email, @now, null);
+	end
+
+	if (@email != @aktualny_email)
+	begin
+		update email
+		set em_data_zakonczenia = @now
+		where em_pk_id = @pk_id and em_data_zakonczenia is null;
+
+		insert into email (em_pk_id, em_nazwa, em_data_dodania, em_data_zakonczenia)
+		values (@pk_id, @email, @now, null);
+	end
+end;
+go
+
+create or alter procedure p_klient_telefon_aktualizuj
+	@pk_id int,
+	@numer_telefonu varchar(max)
+as
+begin
+	declare @aktualny_numer_telefonu varchar(max) = (select tn_nazwa from telefon where tn_pk_id = @pk_id and tn_data_zakonczenia is null);
+	declare @now datetime = getdate();
+	set @numer_telefonu = replace(@numer_telefonu, ' ', '');
+
+	if (@aktualny_numer_telefonu is null)
+	begin
+		insert into telefon (tn_pk_id, tn_nazwa, tn_data_dodania, tn_data_zakonczenia)
+		values (@pk_id, @numer_telefonu, @now, null);
+
+		return;
+	end
+
+	if (@numer_telefonu != @aktualny_numer_telefonu)
+	begin
+		update telefon
+		set tn_data_zakonczenia = @now
+		where tn_pk_id = @pk_id and tn_data_zakonczenia is null;
+		
+		insert into telefon (tn_pk_id, tn_nazwa, tn_data_dodania, tn_data_zakonczenia)
+		values (@pk_id, @numer_telefonu, @now, null);
+	end
+end;
+go
+
+create or alter procedure p_klient_rachunek_bankowy_aktualizuj
+	@pk_id int,
+	@numer_konta varchar(26)
+as
+begin
+	declare @now datetime = getdate();
+	declare @aktualny_numer_konta_id int;
+	declare @aktualny_numer_konta varchar(26);
+	declare @nowy_rachunek_id int;
+	
+	set @aktualny_numer_konta = replace(@aktualny_numer_konta, ' ', '');
+	set @numer_konta = replace(@numer_konta, ' ', '');
+
+	select @aktualny_numer_konta_id = rb_id, @aktualny_numer_konta = rb_numer
+	from klient_rachunek_bankowy
+	join rachunek_bankowy on rb_id = krb_rb_id
+	where
+		krb_pk_id = @pk_id and
+		krb_data_zakonczenia is null
+
+	if (@aktualny_numer_konta_id is null)
+	begin
+		exec p_rachunek_bankowy_dodaj @numer_konta, @nowy_rachunek_id out;
+
+		insert into klient_rachunek_bankowy(krb_rb_id, krb_pk_id, krb_data_dodania)
+		values (@nowy_rachunek_id, @pk_id, @now);
+
+		return;
+	end
+
+	if (@aktualny_numer_konta != @numer_konta)
+	begin
+		update klient_rachunek_bankowy
+		set krb_data_zakonczenia = @now
+		where krb_pk_id = @pk_id and krb_data_zakonczenia is null
+
+		exec p_rachunek_bankowy_dodaj @numer_konta, @nowy_rachunek_id out;
+		
+		insert into klient_rachunek_bankowy(krb_rb_id, krb_pk_id, krb_data_dodania)
+		values (@nowy_rachunek_id, @pk_id, @now);
+	end
 end;
 go
 
@@ -260,7 +508,7 @@ begin
 	insert into rachunek_bankowy (rb_numer) values (@numer);
 
 	set @out_id  = scope_identity();
-end
+end;
 go
 
 create or alter function dbo.f_pobierz_nowy_numer_dlugu()
@@ -276,7 +524,7 @@ begin
 	set @nowy_numer = (isnull(@nowy_numer, 0) + 100000) + 1;
 
 	return '50' + cast(@nowy_numer as nvarchar(max));
-end
+end;
 go
 
 create or alter procedure p_pozyczka_dlug_dodaj
@@ -291,7 +539,7 @@ begin
 	values (@nowy_numer, @rb_id, @pk_id, getdate());
 
 	set @out_id  = scope_identity();
-end
+end;
 go
 
 create or alter procedure p_pozyczka_wniosek_dodaj
@@ -314,21 +562,12 @@ begin
 
 	set @out_id  = scope_identity();
 
-	declare @pk_id int = (select pd_pk_id from pozyczka_dlug where pd_Id = @pd_id);
+	declare @pk_id int = (select pd_pk_id from pozyczka_dlug where pd_id = @pd_id);
 
-	insert into email (em_pk_id, em_nazwa, em_data_dodania, em_data_zakonczenia)
-	values (@pk_id, @email, @now, null);
-
-	insert into telefon (tn_pk_id, tn_nazwa, tn_data_dodania, tn_data_zakonczenia)
-	values (@pk_id, @numer_telefonu, @now, null);
-
-	declare @rb_id int;
-	set @numer_konta = replace(@numer_konta, ' ', '');
-	exec p_rachunek_bankowy_dodaj @numer_konta, @rb_id out;
-
-	insert into klient_rachunek_bankowy (krb_rb_id, krb_pk_id, krb_data_dodania, krb_data_zakonczenia)
-	values (@rb_id, @pk_id, @now, null);
-end
+	exec p_klient_email_aktualizuj @pk_id, @email;
+	exec p_klient_telefon_aktualizuj @pk_id, @numer_telefonu;
+	exec p_klient_rachunek_bankowy_aktualizuj @pk_id, @numer_konta;
+end;
 go
 
 create or alter procedure p_pozyczka_szczegoly_oferty_dodaj
@@ -346,5 +585,29 @@ as
 begin
 	insert into pozyczka_szczegoly_oferty (pszo_pwn_id, pszo_rata_od, pszo_data_pierwszej_raty, pszo_rrso, pszo_okres_splaty, pszo_kwota_wnioskowana, pszo_prowizja, pszo_odsetki, pszo_calkowita_kwota_do_zaplaty, pszo_raty_platne_do)
 	values (@pwn_id, @rata_od, @data_pierwszej_raty, @rrso, @okres_splaty, @kwota_wnioskowana, @prowizja, @odsetki, @calkowita_kwota_do_zaplaty, @raty_platne_do);
-end
+end;
+go
+
+create or alter procedure p_uzytkownik_konto_dodaj
+	@pesel varchar(11),
+	@email nvarchar(max),
+	@haslo nvarchar(max)
+as
+begin
+	declare @pk_id int = (select top 1 pk_id from pozyczka_klient where pk_pesel = @pesel);
+
+	insert into uzytkownik_konto (uk_email, uk_haslo, uk_data_dodania, uk_czy_aktywne, uk_pk_id)
+	values (@email, @haslo, getdate(), 1, @pk_id);
+end;
+go
+
+create or alter procedure p_uzytkownik_konto_pobierz
+	@email nvarchar(max),
+	@pk_id int
+as
+begin
+	select top 1 uk_id, uk_email, uk_haslo, uk_data_dodania, uk_czy_aktywne, uk_pk_id
+	from uzytkownik_konto
+	where uk_email = @email or uk_pk_id = @pk_id
+end;
 go

@@ -2,7 +2,6 @@ using DebtWeb.WebAPI.Data;
 using Microsoft.AspNetCore.Mvc;
 using MoneyLoaner.Data.DTOs;
 using MoneyLoaner.WebAPI.Helpers;
-using System.Collections;
 
 namespace MoneyLoaner.WebAPI.BusinessLogic.Loan;
 
@@ -22,31 +21,16 @@ public class LoanController : ControllerBase
     }
 
     [HttpPost("SubmitNewProposalAsync")]
-    public async Task<HttpApiResponseT<Hashtable>> SubmitNewProposalAsync(NewProposalDto newProposalDto)
+    public async Task<HttpApiResponse> SubmitNewProposalAsync(NewProposalDto newProposalDto)
     {
         try
         {
-            var result = await _businessLogic.SubmitNewProposalAsync(newProposalDto);
-            return HttpHelper.Ok(result);
+            await _businessLogic.SubmitNewProposalAsync(newProposalDto);
+            return HttpApiHelper.Ok();
         }
         catch (Exception e)
         {
-            return HttpHelper.Error<Hashtable>(e);
-        }
-    }
-
-    [HttpPost("Test")]
-    public async Task<HttpApiResponse> Test(int x)
-    {
-        try
-        {
-            //var y = 1 / (x - x);
-
-            return HttpHelper.Ok();
-        }
-        catch (Exception ex)
-        {
-            return HttpHelper.Error(ex);
+            return HttpApiHelper.Error(e);
         }
     }
 }

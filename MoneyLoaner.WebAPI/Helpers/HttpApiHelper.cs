@@ -3,7 +3,7 @@ using System.Net;
 
 namespace MoneyLoaner.WebAPI.Helpers;
 
-public class HttpHelper
+public class HttpApiHelper
 {
     public static HttpApiResponseT<T> Error<T>(Exception e)
     {
@@ -31,19 +31,6 @@ public class HttpHelper
         return httpResponse;
     }
 
-    public static HttpApiResponseT<T> Null<T>()
-    {
-        var httpResponse = new HttpApiResponseT<T>()
-        {
-            StatusCode = HttpStatusCode.InternalServerError,
-            Message = string.Empty,
-            Data = default,
-            IsSuccess = false
-        };
-
-        return httpResponse;
-    }
-
     public static HttpApiResponse Error(Exception ex)
     {
         var httpResponse = new HttpApiResponse()
@@ -63,18 +50,6 @@ public class HttpHelper
             StatusCode = HttpStatusCode.OK,
             Message = string.IsNullOrEmpty(message) ? "Success" : message,
             IsSucces = true
-        };
-
-        return httpResponse;
-    }
-
-    public static HttpApiResponse Null()
-    {
-        var httpResponse = new HttpApiResponse()
-        {
-            StatusCode = HttpStatusCode.InternalServerError,
-            Message = string.Empty,
-            IsSucces = false
         };
 
         return httpResponse;

@@ -16,7 +16,7 @@ public class LoanBusinessLogic : ILoanBusinessLogic
 
     #region PublicMethods
 
-    public async Task<Hashtable> SubmitNewProposalAsync(NewProposalDto newProposalDto)
+    public async Task SubmitNewProposalAsync(NewProposalDto newProposalDto)
     {
         var loan = newProposalDto.LoanDto;
         var proposal = newProposalDto.ProposalDto;
@@ -25,25 +25,23 @@ public class LoanBusinessLogic : ILoanBusinessLogic
             throw new Exception("");
 
         //przygotuj id klienta
-        var customerId = await GetCustomerIdAsync(proposal);
+        var customerId = await AddOrGetCustomerAsync(proposal);
 
         //dodaj rachunek bankowy, na który zostanie wypłacona pożyczka
-        var bankAccountId = await GetCCNumberIdAsync();
+        var bankAccountId = await AddNewCCNumberIdAsync();
 
         //dodaj nowy dług klienta
-        var loanId = await GetLoanIdAsync(customerId, bankAccountId);
+        var loanId = await AddNewLoanAsync(customerId, bankAccountId);
 
         //dodaj nowy wniosek
-        var proposalId = await AddNewProposalAsync(loan, proposal, loanId);
-
-        return new Hashtable();
+        await AddNewProposalAsync(loan, proposal, loanId);
     }
 
     #endregion PublicMethods
 
     #region PrivateMethods
 
-    private static async Task<int> GetCustomerIdAsync(ProposalDto proposal)
+    private static async Task<int> AddOrGetCustomerAsync(ProposalDto proposal)
     {
         var hT = new Hashtable
         {
@@ -60,11 +58,12 @@ public class LoanBusinessLogic : ILoanBusinessLogic
                 { "@imie", proposal.Name },
                 { "@nazwisko", proposal.Surname},
                 { "@pesel", proposal.PersonalNumber },
+                { "@email", proposal.Email },
+                { "@numer_telefonu", proposal.PhoneNumber },
                 { "@out_id", -1 }
             };
 
-            var newCustomer = await SqlHelper.ExecuteSqlQuerySingleAsync("exec p_klient_dodaj @imie, @nazwisko, @pesel, @out_id out;", hT);
-            hT.Clear();
+            var newCustomer = await SqlHelper.ExecuteSqlQuerySingleAsync("exec p_pozyczka_klient_aktualizuj @imie, @nazwisko, @pesel, @email, @numer_telefonu, @out_id out;", hT);
             pk_id = int.Parse(newCustomer["@out_id"]!.ToString()!);
         }
         else
@@ -75,7 +74,7 @@ public class LoanBusinessLogic : ILoanBusinessLogic
         return pk_id;
     }
 
-    private static async Task<int> GetLoanIdAsync(int customerId, int bankAccountId)
+    private static async Task<int> AddNewLoanAsync(int customerId, int bankAccountId)
     {
         var hT = new Hashtable
         {
@@ -89,7 +88,7 @@ public class LoanBusinessLogic : ILoanBusinessLogic
         return int.Parse(newLoanId["@out_id"]!.ToString()!);
     }
 
-    private static async Task<int> GetCCNumberIdAsync()
+    private static async Task<int> AddNewCCNumberIdAsync()
     {
         var ccNumber = GenerateRandomCCNumber();
 
@@ -144,7 +143,7 @@ public class LoanBusinessLogic : ILoanBusinessLogic
 
     private static string GenerateRandomCCNumber()
     {
-        Random random = new();
+        var random = new Random();
         const string digits = "0123456789";
 
         char[] randomChars = new char[24];

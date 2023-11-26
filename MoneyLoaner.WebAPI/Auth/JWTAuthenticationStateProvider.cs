@@ -90,7 +90,7 @@ public class JWTAuthenticationStateProvider : AuthenticationStateProvider, ILogi
         return Convert.FromBase64String(base64);
     }
 
-    public async Task LoginAsync(string token, string email)
+    public async Task LoginAsync(string token)
     {
         await _js.SetInLocalStorage(_TOKENKEY, token);
         var authState = BuildAuthenticationState(token);

@@ -1,12 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
-  <PropertyGroup>
-    <TargetFramework>net7.0</TargetFramework>
-    <Nullable>enable</Nullable>
-    <ImplicitUsings>enable</ImplicitUsings>
-  </PropertyGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\MoneyLoaner.ComponentsShared\MoneyLoaner.ComponentsShared.csproj" />
-    <ProjectReference Include="..\MoneyLoaner.Components\MoneyLoaner.Components.csproj" />
-    <ProjectReference Include="..\MoneyLoaner.WebAPI\MoneyLoaner.WebAPI.csproj" />
-  </ItemGroup>
+	<PropertyGroup>
+		<TargetFramework>net7.0</TargetFramework>
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
+	</PropertyGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\MoneyLoaner.ComponentsShared\MoneyLoaner.ComponentsShared.csproj" />
+		<ProjectReference Include="..\MoneyLoaner.Components\MoneyLoaner.Components.csproj" />
+		<ProjectReference Include="..\MoneyLoaner.WebAPI\MoneyLoaner.WebAPI.csproj" />
+	</ItemGroup>
 </Project>

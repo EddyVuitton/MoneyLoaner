@@ -12,9 +12,6 @@
 		<PackageReference Include="MudBlazor" Version="6.11.0" />
 	</ItemGroup>
 	<ItemGroup>
-		<Folder Include="wwwroot\" />
-	</ItemGroup>
-	<ItemGroup>
 	  <ProjectReference Include="..\MoneyLoaner.Data\MoneyLoaner.Data.csproj" />
 	  <ProjectReference Include="..\MoneyLoaner.WebAPI\MoneyLoaner.WebAPI.csproj" />
 	</ItemGroup>

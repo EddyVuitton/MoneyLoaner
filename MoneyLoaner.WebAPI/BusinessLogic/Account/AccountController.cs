@@ -1,10 +1,9 @@
 ﻿using DebtWeb.WebAPI.Data;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.IdentityModel.Tokens;
+using MoneyLoaner.Data.DTOs;
+using MoneyLoaner.Data.Forms;
 using MoneyLoaner.WebAPI.Data;
 using MoneyLoaner.WebAPI.Helpers;
-using PI6.Shared.Data.Dtos;
-using System.Text;
 
 namespace MoneyLoaner.WebAPI.BusinessLogic.Account;
 
@@ -19,49 +18,57 @@ public class AccountController : ControllerBase
 
     public AccountController(ILogger<AccountController> logger, IAccountBusinessLogic businessLogic, IConfiguration configuration)
     {
-        try
-        {
-            _logger = logger;
-            _businessLogic = businessLogic;
-            _configuration = configuration;
-            _jwtKeyBytes = Encoding.UTF8.GetBytes(_configuration["JWT:key"]!);
-        }
-        catch
-        {
-            throw new Exception("Nie udana próba zainicjalizowania");
-        }
+        _logger = logger;
+        _businessLogic = businessLogic;
+        _configuration = configuration;
     }
 
     [HttpPost("Login")]
-    public async Task<HttpApiResponseT<UserToken>> Login(AccountDto account)
+    public async Task<HttpApiResponseT<UserToken>> Login(LoginAccountForm loginForm)
     {
-        if (account is null || account.UserEmail is null || account.UserPassword is null)
-            return HttpHelper.Error<UserToken>(new Exception("Niepoprawna próba logowania"));
-
-        var result = false;
-        var dbAccountPassword = await _businessLogic.GetAccountHashedPasswordAsync(account.UserEmail);
-        var hashedPassword = AuthHelper.HashPassword(account.UserPassword);
-
-        if (dbAccountPassword == hashedPassword)
-            result = true;
-
-        if (result)
+        try
         {
-            try
-            {
-                var key = new SymmetricSecurityKey(_jwtKeyBytes);
-                var token = AuthHelper.BuildToken(account.UserEmail, key);
-
-                return HttpHelper.Ok(token);
-            }
-            catch (Exception e)
-            {
-                return HttpHelper.Error<UserToken>(e);
-            }
+            var result = await _businessLogic.LoginAsync(loginForm);
+            return HttpApiHelper.Ok(result);
         }
-        else
+        catch (Exception e)
         {
-            return HttpHelper.Error<UserToken>(new Exception("Nie prawidłowe hasło"));
+            return HttpApiHelper.Error<UserToken>(e);
+        }
+    }
+
+    [HttpPost("Register")]
+    public async Task<HttpApiResponse> Register(RegisterAccountForm registerForm)
+    {
+        try
+        {
+            var result = await _businessLogic.RegisterAsync(registerForm);
+
+            return HttpApiHelper.Ok(result);
+        }
+        catch (Exception e)
+        {
+            return HttpApiHelper.Error(e);
+        }
+    }
+
+    [HttpGet("GetUserAccount")]
+    public async Task<HttpApiResponseT<UserAccountDto>> GetUserAccount(string email)
+    {
+        try
+        {
+            var result = await _businessLogic.GetUserAccountInfoAsync(email);
+
+            if (result is null)
+            {
+                throw new Exception("Brak użytkownika w bazie");
+            }
+
+            return HttpApiHelper.Ok(result);
+        }
+        catch (Exception e)
+        {
+            return HttpApiHelper.Error<UserAccountDto>(e);
         }
     }
 }

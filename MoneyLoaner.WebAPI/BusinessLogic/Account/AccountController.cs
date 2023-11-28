@@ -14,7 +14,6 @@ public class AccountController : ControllerBase
     private readonly ILogger<AccountController> _logger;
     private readonly IAccountBusinessLogic _businessLogic;
     private readonly IConfiguration _configuration;
-    private readonly byte[] _jwtKeyBytes;
 
     public AccountController(ILogger<AccountController> logger, IAccountBusinessLogic businessLogic, IConfiguration configuration)
     {

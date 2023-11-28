@@ -1,3 +1,35 @@
 ﻿@page "/account"
 
-<MudText Typo="Typo.h3">Account page</MudText>
+<div class="d-flex justify-center" style="border: 1px solid red; width: 100%; height: 600px;">
+    <div class="d-flex flex-row justify-space-between" style="width: 100%; margin: 0% 2%;">
+        <div style="border: 1px solid blue; width: 45%;">
+        </div>
+        <div style="border: 1px solid green; width: 45%; overflow-y: scroll;">
+            <MudText Typo="Typo.h4" Style="margin: 2%;">Aktualny harmonogram</MudText>
+            <MudDivider />
+            <div style="">
+                <table class="schedule">
+                    <tr>
+                        <th style="width: 10%; position: sticky; top: 0px; background-color: white;">Rata</th>
+                        <th style="width: 20%; position: sticky; top: 0px; background-color: white;">Dzień wymagalności</th>
+                        <th style="width: 15%; position: sticky; top: 0px; background-color: white;">Kapitał</th>
+                        <th style="width: 15%; position: sticky; top: 0px; background-color: white;">Prowizja</th>
+                        <th style="width: 15%; position: sticky; top: 0px; background-color: white;">Odsetki umowne</th>
+                        <th style="width: 15%; position: sticky; top: 0px; background-color: white;">Suma</th>
+                    </tr>
+                    @foreach (var x in _installmentDtos.OrderBy(x => x.PaymentDate))
+                    {
+                        <tr>
+                            <td>@x.Number</td>
+                            <td>@x.PaymentDate.ToString("dd.MM.yyyy")</td>
+                            <td>@x.Principal</td>
+                            <td>@x.Fee</td>
+                            <td>@x.Interest</td>
+                            <td>@x.Total</td>
+                        </tr>
+                    }
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

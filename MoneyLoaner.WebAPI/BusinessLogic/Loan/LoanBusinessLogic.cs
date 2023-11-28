@@ -35,11 +35,26 @@ public class LoanBusinessLogic : ILoanBusinessLogic
 
         //dodaj nowy wniosek
         await AddNewProposalAsync(loan, proposal, loanId);
+
+        //dodaj harmonogram pierwotny
+        await AddInitialSchedule(loan, loanId);
     }
 
     #endregion PublicMethods
 
     #region PrivateMethods
+
+    private static async Task AddInitialSchedule(LoanDto loan, int loanId)
+    {
+        var xml = LoanHelper.GenerateXmlT(loan.InstallmentDtoList!, "raty");
+        var hT = new Hashtable
+        {
+            { "@pd_id", loanId },
+            { "@xml", xml }
+        };
+
+        await SqlHelper.ExecuteSqlQuerySingleAsync("exec p_dodaj_harmonogram @pd_id, @xml;", hT);
+    }
 
     private static async Task<int> AddOrGetCustomerAsync(ProposalDto proposal)
     {

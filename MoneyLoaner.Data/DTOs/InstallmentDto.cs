@@ -14,5 +14,9 @@ public class InstallmentDto
         {
             return Principal + Fee + Interest;
         }
+        set
+        {
+            //do nothing...
+        }
     }
 }

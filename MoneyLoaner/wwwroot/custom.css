@@ -53,3 +53,26 @@
         padding: 0.3rem 0;
         font-size: 20px;
     }
+
+.schedule {
+    font-family: arial, sans-serif;
+    border-collapse: collapse;
+    width: 100%;
+}
+
+    .schedule td, .schedule th {
+        text-align: center;
+        padding: 8px;
+    }
+
+    .schedule td {
+        border: 1px solid #dddddd;
+    }
+
+    .schedule th {
+        font-size: 0.9rem;
+    }
+
+    .schedule tr:nth-child(even) {
+        background-color: #f5f5f5;
+    }

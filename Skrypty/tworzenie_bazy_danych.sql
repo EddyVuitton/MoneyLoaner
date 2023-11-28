@@ -7,26 +7,30 @@ begin
 
 	select @sql_drop_all_connections = coalesce(@sql_drop_all_connections,'') + 'kill ' + convert(varchar, spid) + ';'
 	from master..sysprocesses
-	where dbid in (db_id('money_loaner_data'), db_id('money_loaner_logic'), db_id('money_loaner_shdlog')) AND spid <> @@spid
+	where dbid in (
+		db_id('money_loaner_data'),
+		db_id('money_loaner_logic'),
+		db_id('money_loaner_shdlog')
+	) and spid <> @@spid
 
 	exec (@sql_drop_all_connections);
 
 	declare @exec nvarchar(max);
 	if db_id('money_loaner_data') is not null
 	begin
-		set @exec = concat('drop database ', 'money_loaner_data');
+		set @exec = 'drop database money_loaner_data;';
 		exec (@exec);
 	end
 
 	if db_id('money_loaner_logic') is not null
 	begin
-		set @exec = concat('drop database ', 'money_loaner_logic');
+		set @exec = 'drop database money_loaner_logic;';
 		exec (@exec);
 	end
 
 	if db_id('money_loaner_shdlog') is not null
 	begin
-		set @exec = concat('drop database ', 'money_loaner_shdlog');
+		set @exec = 'drop database money_loaner_shdlog;';
 		exec (@exec);
 	end
 end;
@@ -584,8 +588,30 @@ create or alter procedure p_pozyczka_szczegoly_oferty_dodaj
 	@raty_platne_do int
 as
 begin
-	insert into pozyczka_szczegoly_oferty (pszo_pwn_id, pszo_rata_od, pszo_data_pierwszej_raty, pszo_rrso, pszo_okres_splaty, pszo_kwota_wnioskowana, pszo_prowizja, pszo_odsetki, pszo_calkowita_kwota_do_zaplaty, pszo_raty_platne_do)
-	values (@pwn_id, @rata_od, @data_pierwszej_raty, @rrso, @okres_splaty, @kwota_wnioskowana, @prowizja, @odsetki, @calkowita_kwota_do_zaplaty, @raty_platne_do);
+	insert into pozyczka_szczegoly_oferty (
+		pszo_pwn_id,
+		pszo_rata_od,
+		pszo_data_pierwszej_raty,
+		pszo_rrso,
+		pszo_okres_splaty,
+		pszo_kwota_wnioskowana,
+		pszo_prowizja,
+		pszo_odsetki,
+		pszo_calkowita_kwota_do_zaplaty,
+		pszo_raty_platne_do
+	)
+	values (
+		@pwn_id,
+		@rata_od,
+		@data_pierwszej_raty,
+		@rrso,
+		@okres_splaty,
+		@kwota_wnioskowana,
+		@prowizja,
+		@odsetki,
+		@calkowita_kwota_do_zaplaty,
+		@raty_platne_do
+	);
 end;
 go
 
@@ -610,5 +636,98 @@ begin
 	select top 1 uk_id, uk_email, uk_haslo, uk_data_dodania, uk_czy_aktywne, uk_pk_id
 	from uzytkownik_konto
 	where uk_email = @email or uk_pk_id = @pk_id
+end;
+go
+
+create or alter function f_przerob_na_dekrety (	
+	@xml xml
+)
+returns table
+as
+return (
+	select rata, konto_nazwa, kwota, data_wymagalnosci, konto
+	from (
+		select
+			rata,
+			konto_nazwa,
+			kwota,
+			[data_wymagalnosci],
+			case konto_nazwa
+				when 'kapital' then 3
+				when 'odsetki' then 5
+				when 'prowizja' then 4
+			end konto
+		from (
+			select
+				y.value('(Number)[1]', 'int') [rata],
+				y.value('(Principal)[1]', 'decimal(18, 2)') [kapital],
+				y.value('(Interest)[1]', 'decimal(18, 2)') [odsetki],
+				y.value('(Fee)[1]', 'decimal(18, 2)') [prowizja],
+				y.value('(PaymentDate)[1]', 'date') [data_wymagalnosci]
+			from @xml.nodes('//raty/InstallmentDto') as x(y)
+		) x
+		unpivot (
+			kwota for konto_nazwa in ([kapital], [odsetki], [prowizja])
+		) unpvt
+		union all
+		select y.value('(Number)[1]', 'int'), 'techniczne', y.value('(Total)[1]', 'decimal(18, 2)'), y.value('(PaymentDate)[1]', 'date'), 1
+		from @xml.nodes('//raty/InstallmentDto') as x(y)
+	) y
+);
+go
+
+create or alter procedure p_dodaj_harmonogram @pd_id int, @xml xml
+as
+begin
+	declare @now datetime = getdate();
+	declare @po_id int;
+	declare @raty table (por_id int, rata int);
+	declare @ksiegowania table (ks_id int, por_id int);
+
+	drop table if exists #harm;
+	select rata, konto_nazwa, kwota, data_wymagalnosci, konto
+	into #harm
+	from dbo.f_przerob_na_dekrety(cast(@xml as xml))
+	order by rata, konto
+
+	insert into pozyczka (po_pd_id, po_nazwa, po_data_dodania)
+	select @pd_id, 'Harmonogram pocz¹tkowy', @now;
+
+	set @po_id = scope_identity();
+
+	merge pozyczka_rata as t
+	using (
+		select rata, data_wymagalnosci
+		from #harm
+		where konto = 1
+	) as s
+	on 1 = 0
+	when not matched then
+		insert (por_po_id, por_numer, por_data_wymagalnosci)
+		values (@po_id, rata, data_wymagalnosci)
+		output inserted.por_id, s.rata
+		into @raty (por_id, rata)
+	;
+
+	merge ksiegowanie as t
+	using (
+		select por_id
+		from @raty
+	) as s
+	on 1 = 0
+	when not matched then
+		insert (ks_por_id, ks_data_dodania, ks_data_operacji, ks_kst_id)
+		values (por_id, @now, @now, 1)
+		output inserted.ks_id, s.por_id
+		into @ksiegowania (ks_id, por_id)
+	;
+
+	insert into ksiegowanie_dekret (ksd_ks_id, ksd_por_id, ksd_ksk_id, ksd_ksksub_id, ksd_kwota_wn, ksd_kwota_ma)
+	select ks_id, raty.por_id, konto, ksksub_id, iif(konto != 1, kwota, 0), iif(konto = 1, kwota, 0)
+	from #harm harm
+	join @raty raty on harm.rata = raty.rata
+	join @ksiegowania ks on ks.por_id = raty.por_id
+	left join ksiegowanie_konto_subkonto on ksksub_ksk_id = harm.konto
+	order by harm.rata, konto
 end;
 go

@@ -8,12 +8,10 @@
                 <MudCardContent>
                     <MudTextField @bind-Value="_model.PersonalNumber"
                                   Label="Numer pesel"
-                                  For="@(() => _model.PersonalNumber)"
-                                  ReadOnly=true />
+                                  For="@(() => _model.PersonalNumber)" />
                     <MudTextField @bind-Value="_model.Email"
                                   Label="Adres email"
-                                  For="@(() => _model.Email)"
-                                  ReadOnly=true />
+                                  For="@(() => _model.Email)" />
                     <MudTextField @bind-Value="_model.Password"
                                   Label="Password" HelperText="Wybierz silne hasło" Class="mt-3"
                                   For="@(() => _model.Password)" InputType="InputType.Password" />

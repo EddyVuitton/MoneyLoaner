@@ -33,4 +33,32 @@ public class LoanController : ControllerBase
             return HttpApiHelper.Error(e);
         }
     }
+
+    [HttpGet("GetScheduleAsync")]
+    public async Task<HttpApiResponseT<List<LoanInstallmentDto>>> GetScheduleAsync(int po_id)
+    {
+        try
+        {
+            var result = await _businessLogic.GetScheduleAsync(po_id);
+            return HttpApiHelper.Ok(result);
+        }
+        catch (Exception e)
+        {
+            return HttpApiHelper.Error<List<LoanInstallmentDto>>(e);
+        }
+    }
+
+    [HttpGet("GetAccountInfoAsync")]
+    public async Task<HttpApiResponseT<AccountInfoDto?>> GetAccountInfoAsync(int pk_id)
+    {
+        try
+        {
+            var result = await _businessLogic.GetAccountInfoAsync(pk_id);
+            return HttpApiHelper.Ok(result);
+        }
+        catch (Exception e)
+        {
+            return HttpApiHelper.Error<AccountInfoDto?>(e);
+        }
+    }
 }

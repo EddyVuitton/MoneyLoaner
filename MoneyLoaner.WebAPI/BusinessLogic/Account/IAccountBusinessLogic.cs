@@ -11,4 +11,10 @@ public interface IAccountBusinessLogic
     Task<UserToken> LoginAsync(LoginAccountForm loginForm);
 
     Task<string> RegisterAsync(RegisterAccountForm registerForm);
+
+    Task UpdateEmailAsync(int pk_id, string email);
+
+    Task UpdatePhoneAsync(int pk_id, string phone);
+
+    Task UpdatePasswordAsync(UpdatePasswordForm updatePasswordForm);
 }

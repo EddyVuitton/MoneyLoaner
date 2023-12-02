@@ -39,7 +39,7 @@ public partial class ProposalForm
             Email = "abc@xyz.com",
             MonthlyExpenses = 100,
             MonthlyIncome = 200,
-            PersonalNumber = "00221601352",
+            PersonalNumber = "01242425645",
             PhoneNumber = "123456789"
         };
         _proposalSectionWrapperBorderStyle = _DISABLEBORDERSTYLE;

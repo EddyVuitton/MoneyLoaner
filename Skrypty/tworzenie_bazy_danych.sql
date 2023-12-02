@@ -217,7 +217,7 @@ go
 create table ksiegowanie_dekret (
 	ksd_id int primary key identity(1, 1),
 	ksd_ks_id int not null foreign key references ksiegowanie (ks_id),
-	ksd_por_id int not null foreign key references pozyczka_rata (por_id),
+	ksd_por_id int null foreign key references pozyczka_rata (por_id),
 	ksd_ksk_id int not null foreign key references ksiegowanie_konto (ksk_id),
 	ksd_ksksub_id int null foreign key references ksiegowanie_konto_subkonto (ksksub_id),
 	ksd_kwota_wn decimal(18, 2) not null,
@@ -428,6 +428,10 @@ begin
 
 		insert into email (em_pk_id, em_nazwa, em_data_dodania, em_data_zakonczenia)
 		values (@pk_id, @email, @now, null);
+
+		update uzytkownik_konto
+		set uk_email = @email
+		where uk_pk_id = @pk_id;
 	end
 end;
 go
@@ -628,6 +632,17 @@ begin
 end;
 go
 
+create or alter procedure p_uzytkownik_konto_zmien_haslo
+	@pk_id int,
+	@haslo nvarchar(max)
+as
+begin
+	update uzytkownik_konto
+	set uk_haslo = @haslo
+	where uk_pk_id = @pk_id;
+end;
+go
+
 create or alter procedure p_uzytkownik_konto_pobierz
 	@email nvarchar(max),
 	@pk_id int
@@ -636,6 +651,17 @@ begin
 	select top 1 uk_id, uk_email, uk_haslo, uk_data_dodania, uk_czy_aktywne, uk_pk_id
 	from uzytkownik_konto
 	where uk_email = @email or uk_pk_id = @pk_id
+end;
+go
+
+create or alter procedure p_uzytkownik_konto_zmien_haslo
+	@pk_id int,
+	@haslo nvarchar(max)
+as
+begin
+	update uzytkownik_konto
+	set uk_haslo = @haslo
+	where uk_pk_id = @pk_id;
 end;
 go
 
@@ -729,5 +755,79 @@ begin
 	join @ksiegowania ks on ks.por_id = raty.por_id
 	left join ksiegowanie_konto_subkonto on ksksub_ksk_id = harm.konto
 	order by harm.rata, konto
+end;
+go
+
+create or alter function f_aktualna_pozyczka (@pk_id int)
+returns int
+begin
+	declare @aktualna_pozyczka int;
+
+	select top 1 @aktualna_pozyczka = pd_id
+	from pozyczka_dlug
+	where pd_pk_id = @pk_id
+	order by cast(pd_data_dodania as date) desc, pd_id desc
+
+	return @aktualna_pozyczka;
+end
+go
+
+create or alter procedure p_pobierz_harmonogram @po_id int
+as
+begin
+	select
+		por_id															PorId,
+		por_numer														Number,
+		cast(por_data_wymagalnosci as date)								PaymentDate,
+		sum(iif(ks_kst_id = 1, ksd_kwota_wn, 0))						Debt,
+		sum(iif(ks_kst_id = 2, ksd_kwota_ma, 0))						Repayment,
+		sum(iif(ks_kst_id = 1, ksd_kwota_wn, 0)) -
+		sum(iif(ks_kst_id = 2, ksd_kwota_ma, 0))						Balance,
+		sum(iif(ks_kst_id = 1 and ksd_ksk_id = 3, ksd_kwota_wn, 0)) -
+		sum(iif(ks_kst_id = 2 and ksd_ksk_id = 3, ksd_kwota_ma, 0))		Principal,
+		sum(iif(ks_kst_id = 1 and ksd_ksk_id = 4, ksd_kwota_wn, 0)) -
+		sum(iif(ks_kst_id = 2 and ksd_ksk_id = 4, ksd_kwota_ma, 0))		AdmissionFee,
+		sum(iif(ks_kst_id = 1 and ksd_ksk_id = 5, ksd_kwota_wn, 0)) -
+		sum(iif(ks_kst_id = 2 and ksd_ksk_id = 5, ksd_kwota_ma, 0))		ContractualInterest
+	from pozyczka_rata
+	join ksiegowanie_dekret on por_id = ksd_por_id
+	join ksiegowanie on ks_id = ksd_ks_id
+	where por_po_id = @po_id
+	group by por_id, por_numer, por_data_wymagalnosci
+	order by PaymentDate
+end;
+go
+
+create or alter procedure p_pobierz_pozyczki_klienta @pk_id int
+as
+begin
+	select pd_id, pd_numer, pd_data_dodania, rb_numer, dbo.f_aktualna_pozyczka(pd_id) po_id_aktualna
+	from pozyczka_dlug
+	join rachunek_bankowy on rb_id = pd_rb_id
+	where pd_pk_id = @pk_id
+end;
+go
+
+create or alter procedure p_konto_informacje_pobierz @pk_id int
+as
+begin
+	select
+		pk_numer [ClientNumber],
+		pk_imie [Name],
+		pk_nazwisko [Surname],
+		pk_pesel [PersonalNumber],
+		pk_data_dodania [AccountCreateDate],
+		pd_numer [LoanNumber],
+		rb_numer [CCNumberToRepayment],
+		em_nazwa [Email],
+		tn_nazwa [Phone]
+	from pozyczka_dlug
+	join rachunek_bankowy on rb_id = pd_rb_id
+	join pozyczka_klient on pk_Id = pd_pk_id
+	join email on pk_id = em_pk_id and em_data_zakonczenia is null
+	join telefon on pk_id = tn_pk_id and tn_data_zakonczenia is null
+	where
+		pk_id = @pk_id and
+		pd_id = dbo.f_aktualna_pozyczka(@pk_id)
 end;
 go

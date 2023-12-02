@@ -1,0 +1,28 @@
+﻿@if (InstallmentDtos is not null)
+{
+    <table class="schedule">
+        <tr>
+            <th style="width: 10%; position: sticky; top: 0px; background-color: white;">Rata</th>
+            <th style="width: 20%; position: sticky; top: 0px; background-color: white;">Dzień wymagalności</th>
+            <th style="width: 15%; position: sticky; top: 0px; background-color: white;">Kapitał</th>
+            <th style="width: 15%; position: sticky; top: 0px; background-color: white;">Prowizja administracyjna</th>
+            <th style="width: 15%; position: sticky; top: 0px; background-color: white;">Odsetki umowne</th>
+            <th style="width: 15%; position: sticky; top: 0px; background-color: white;">Pozostała kwota do spłaty</th>
+        </tr>
+        @foreach (var x in InstallmentDtos.OrderBy(x => x.PaymentDate))
+        {
+            <tr>
+                <td>@x.Number</td>
+                <td>@x.PaymentDate.ToString("dd.MM.yyyy")</td>
+                <td>@x.Principal</td>
+                <td>@x.AdmissionFee</td>
+                <td>@x.ContractualInterest</td>
+                <td>@x.Balance</td>
+            </tr>
+        }
+    </table>
+}
+else
+{
+    <MudText Typo="Typo.h6" Style="margin: 2%;">Brak harmonogramu do spłaty...</MudText>
+}

@@ -1,23 +1,38 @@
-﻿using MoneyLoaner.Data.DTOs;
+﻿using Microsoft.AspNetCore.Components;
+using Microsoft.JSInterop;
+using MoneyLoaner.ComponentsShared.Helpers;
+using MoneyLoaner.ComponentsShared.Helpers.Snackbar;
+using MoneyLoaner.Data.DTOs;
+using MoneyLoaner.WebAPI.Services.ApplicationService;
 
 namespace MoneyLoaner.Components.Pages.Auth;
 
 public partial class Account
 {
-    List<InstallmentDto> _installmentDtos = new();
+#nullable disable
+    [Inject] public IApplicationService ApplicationService { get; set; }
+    [Inject] public ISnackbarHelper SnackbarHelper { get; set; }
+    [Inject] public IJSRuntime JS { get; set; }
+    [Inject] public NavigationManager NavigationManager { get; set; }
+#nullable enable
+
+    private List<LoanInstallmentDto> _installmentDtos = new();
+    private AccountInfoDto? _accountInfoDto;
 
     protected async override Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
 
-        var now = DateTime.UtcNow;
+        var scheduleResult = await ApplicationService.GetScheduleAsync(1);
+        _installmentDtos = scheduleResult.Data!;
 
-        for (int i = 0; i < 30; i++)
+        var accountInfoResult = await ApplicationService.GetAccountInfoAsync(1);
+
+        if (accountInfoResult is not null && accountInfoResult.Data is not null)
         {
-            now = now.AddMonths(1);
-            _installmentDtos.Add(new InstallmentDto() { PaymentDate = now });
+            accountInfoResult.Data.Phone = ComponentsHelper.FormatPhoneNumber(accountInfoResult.Data.Phone);
         }
 
-        _installmentDtos.First().PaymentDate = DateTime.Now;
+        _accountInfoDto = accountInfoResult?.Data;
     }
 }

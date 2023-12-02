@@ -1,7 +1,10 @@
 ﻿using MoneyLoaner.Data.Context;
 using MoneyLoaner.Data.DTOs;
+using MoneyLoaner.WebAPI.Data;
+using MoneyLoaner.WebAPI.Extensions;
 using MoneyLoaner.WebAPI.Helpers;
 using System.Collections;
+using System.Data;
 
 namespace MoneyLoaner.WebAPI.BusinessLogic.Loan;
 
@@ -38,6 +41,28 @@ public class LoanBusinessLogic : ILoanBusinessLogic
 
         //dodaj harmonogram pierwotny
         await AddInitialSchedule(loan, loanId);
+    }
+
+    public async Task<List<LoanInstallmentDto>> GetScheduleAsync(int po_id)
+    {
+        var hT = new object[]
+        {
+            SqlParam.CreateParameter("po_id", po_id, SqlDbType.Int)
+        };
+
+        return await _context.SqlQueryAsync<LoanInstallmentDto>("exec p_pobierz_harmonogram @po_id;", hT);
+    }
+
+    public async Task<AccountInfoDto?> GetAccountInfoAsync(int pk_id)
+    {
+        var hT = new object[]
+        {
+            SqlParam.CreateParameter("pk_id", pk_id, SqlDbType.Int)
+        };
+
+        var result = await _context.SqlQueryAsync<AccountInfoDto>("exec p_konto_informacje_pobierz @pk_id;", hT);
+
+        return result.FirstOrDefault();
     }
 
     #endregion PublicMethods

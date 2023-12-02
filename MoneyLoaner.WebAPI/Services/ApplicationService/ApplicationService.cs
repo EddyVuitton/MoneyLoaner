@@ -18,20 +18,7 @@ public class ApplicationService : IApplicationService
         _httpClient = httpClient;
     }
 
-    public async Task<HttpApiResponse> SubmitNewProposalAsync(NewProposalDto newProposalDto)
-    {
-        var json = JsonConvert.SerializeObject(newProposalDto);
-        var content = new StringContent(json, Encoding.UTF8, "application/json");
-        var response = await _httpClient.PostAsync($"{_LOANAPI}/SubmitNewProposalAsync", content);
-
-        var responseContent = await response.Content.ReadAsStringAsync();
-        var deserialisedResponse = JsonConvert.DeserializeObject<HttpApiResponse>(responseContent);
-
-        if (deserialisedResponse is null)
-            throw new NullReferenceException(typeof(HttpApiResponse).Name);
-
-        return deserialisedResponse;
-    }
+    #region Account
 
     public async Task<HttpApiResponseT<UserToken>> LoginAsync(LoginAccountForm loginForm)
     {
@@ -66,7 +53,6 @@ public class ApplicationService : IApplicationService
     public async Task<HttpApiResponseT<UserAccountDto?>> GetUserAccountAsync(string email)
     {
         var response = await _httpClient.GetAsync($"{_ACCOUNTAPI}/GetUserAccount?email={email}");
-
         var responseContent = await response.Content.ReadAsStringAsync();
         var deserialisedResponse = JsonConvert.DeserializeObject<HttpApiResponseT<UserAccountDto?>>(responseContent);
 
@@ -75,4 +61,90 @@ public class ApplicationService : IApplicationService
 
         return deserialisedResponse;
     }
+
+    public async Task<HttpApiResponse> UpdateEmailAsync(int pk_id, string email)
+    {
+        var response = await _httpClient.PostAsync($"{_ACCOUNTAPI}/UpdateEmailAsync?pk_id={pk_id}&email={email}", null);
+        var responseContent = await response.Content.ReadAsStringAsync();
+        var deserialisedResponse = JsonConvert.DeserializeObject<HttpApiResponse>(responseContent);
+
+        if (deserialisedResponse is null)
+            throw new NullReferenceException(typeof(HttpApiResponse).Name);
+
+        return deserialisedResponse;
+    }
+
+    public async Task<HttpApiResponse> UpdatePhoneAsync(int pk_id, string phone)
+    {
+        var response = await _httpClient.PostAsync($"{_ACCOUNTAPI}/UpdatePhoneAsync?pk_id={pk_id}&phone={phone}", null);
+        var responseContent = await response.Content.ReadAsStringAsync();
+        var deserialisedResponse = JsonConvert.DeserializeObject<HttpApiResponse>(responseContent);
+
+        if (deserialisedResponse is null)
+            throw new NullReferenceException(typeof(HttpApiResponse).Name);
+
+        return deserialisedResponse;
+    }
+
+    public async Task<HttpApiResponse> UpdatePasswordAsync(UpdatePasswordForm updatePasswordForm)
+    {
+        var json = JsonConvert.SerializeObject(updatePasswordForm);
+        var content = new StringContent(json, Encoding.UTF8, "application/json");
+        var response = await _httpClient.PostAsync($"{_ACCOUNTAPI}/UpdatePasswordAsync", content);
+
+        var responseContent = await response.Content.ReadAsStringAsync();
+        var deserialisedResponse = JsonConvert.DeserializeObject<HttpApiResponse>(responseContent);
+
+        if (deserialisedResponse is null)
+            throw new NullReferenceException(typeof(HttpApiResponse).Name);
+
+        return deserialisedResponse;
+    }
+
+    #endregion Account
+
+    #region Loan
+
+    public async Task<HttpApiResponse> SubmitNewProposalAsync(NewProposalDto newProposalDto)
+    {
+        var json = JsonConvert.SerializeObject(newProposalDto);
+        var content = new StringContent(json, Encoding.UTF8, "application/json");
+        var response = await _httpClient.PostAsync($"{_LOANAPI}/SubmitNewProposalAsync", content);
+
+        var responseContent = await response.Content.ReadAsStringAsync();
+        var deserialisedResponse = JsonConvert.DeserializeObject<HttpApiResponse>(responseContent);
+
+        if (deserialisedResponse is null)
+            throw new NullReferenceException(typeof(HttpApiResponse).Name);
+
+        return deserialisedResponse;
+    }
+
+    public async Task<HttpApiResponseT<List<LoanInstallmentDto>?>> GetScheduleAsync(int po_id)
+    {
+        var response = await _httpClient.GetAsync($"{_LOANAPI}/GetScheduleAsync?po_id={po_id}");
+
+        var responseContent = await response.Content.ReadAsStringAsync();
+        var deserialisedResponse = JsonConvert.DeserializeObject<HttpApiResponseT<List<LoanInstallmentDto>?>>(responseContent);
+
+        if (deserialisedResponse is null)
+            throw new NullReferenceException(typeof(List<LoanInstallmentDto>).Name);
+
+        return deserialisedResponse;
+    }
+
+    public async Task<HttpApiResponseT<AccountInfoDto?>> GetAccountInfoAsync(int pk_id)
+    {
+        var response = await _httpClient.GetAsync($"{_LOANAPI}/GetAccountInfoAsync?pk_id={pk_id}");
+
+        var responseContent = await response.Content.ReadAsStringAsync();
+        var deserialisedResponse = JsonConvert.DeserializeObject<HttpApiResponseT<AccountInfoDto?>>(responseContent);
+
+        if (deserialisedResponse is null)
+            throw new NullReferenceException(typeof(AccountInfoDto).Name);
+
+        return deserialisedResponse;
+    }
+
+    #endregion Loan
 }

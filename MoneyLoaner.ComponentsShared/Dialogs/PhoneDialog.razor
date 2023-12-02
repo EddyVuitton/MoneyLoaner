@@ -1,0 +1,19 @@
+﻿<MudDialog>
+    <DialogContent>
+        <MudForm @ref="@_form"
+                 Model="@_proposalDto"
+                 Validation="@(_proposalValidator!.ValidateValues)">
+            <MudTextField @bind-Value="_proposalDto.PhoneNumber"
+                          For="@(() => _proposalDto.PhoneNumber)"
+                          Mask="@(new PatternMask("000 000 000"))"
+                          Immediate="true"
+                          Label="Wpisz nowy numer telefonu"
+                          Adornment="Adornment.Start"
+                          AdornmentText="+48" />
+        </MudForm>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Close" Color="Color.Primary">Zamknij</MudButton>
+        <MudButton OnClick="Submit" Color="Color.Success">Potwierdź</MudButton>
+    </DialogActions>
+</MudDialog>

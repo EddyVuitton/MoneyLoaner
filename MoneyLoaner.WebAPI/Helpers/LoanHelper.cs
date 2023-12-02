@@ -46,18 +46,6 @@ public static class LoanHelper
         return new DateTime(nextMonth.Year, nextMonth.Month, loan.DayOfDatePayment);
     }
 
-    public static string GenerateXmlT<T>(T objectToGenerateXml, string rootAttribute)
-    {
-        using var stream = new StringWriter();
-        var serializer = new XmlSerializer(typeof(T), new XmlRootAttribute(rootAttribute));
-        serializer.Serialize(stream, objectToGenerateXml);
-        var xml = stream.ToString();
-
-        stream.Close();
-
-        return xml;
-    }
-
     #endregion PrivateMethods
 
     #region PublicMethods
@@ -161,6 +149,18 @@ public static class LoanHelper
         }
 
         throw new Exception("XIRR calculation did not converge within the specified number of iterations.");
+    }
+
+    public static string GenerateXmlT<T>(T objectToGenerateXml, string rootAttribute)
+    {
+        using var stream = new StringWriter();
+        var serializer = new XmlSerializer(typeof(T), new XmlRootAttribute(rootAttribute));
+        serializer.Serialize(stream, objectToGenerateXml);
+        var xml = stream.ToString();
+
+        stream.Close();
+
+        return xml;
     }
 
     #endregion PublicMethods

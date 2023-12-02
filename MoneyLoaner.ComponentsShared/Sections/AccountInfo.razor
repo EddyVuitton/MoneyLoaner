@@ -1,0 +1,50 @@
+﻿@if (AccountInfoDto is not null)
+{
+    <div class="d-flex flex-column gap-y-6" style="width: 100%; height: 100%;">
+        <div class="d-flex flex-column gap-y-4" style="font-size: 1.2rem;">
+            <div class="d-flex flex-row">
+                <span class="title">Numer klienta</span>
+                <span class="item">@AccountInfoDto.ClientNumber</span>
+            </div>
+            <div class="d-flex flex-row">
+                <span class="title">Imię</span>
+                <span class="item">@AccountInfoDto.Name</span>
+            </div>
+            <div class="d-flex flex-row">
+                <span class="title">Nazwisko</span>
+                <span class="item">@AccountInfoDto.Surname</span>
+            </div>
+            <div class="d-flex flex-row">
+                <span class="title">Pesel</span>
+                <span class="item">@AccountInfoDto.PersonalNumber</span>
+            </div>
+            <div class="d-flex flex-row">
+                <span class="title" style="width: 30%;">Data stworzenia konta</span>
+                <span class="item" style="width: 70%;">@AccountInfoDto.AccountCreateDate.ToString("dd.MM.yyyy") r.</span>
+            </div>
+        </div>
+        <div class="d-flex flex-row justify-space-around">
+            <MudButton OnClick="DialogChangeEmail" Class="button" Variant="Variant.Outlined" Color="Color.Secondary">Zmień adres email</MudButton>
+            <MudButton OnClick="DialogChangePassword" Class="button" Variant="Variant.Outlined" Color="Color.Success">Zmień hasło</MudButton>
+            <MudButton OnClick="DialogChangePhone" Class="button" Variant="Variant.Outlined" Color="Color.Info">Zmień numer telefonu</MudButton>
+        </div>
+        <div class="d-flex flex-column gap-y-4" style=" font-size: 1.2rem;">
+            <div class="d-flex flex-row">
+                <span class="title" style="width: 30%;">Numer aktualnej pożyczki</span>
+                <span class="item" style="width: 70%;">@AccountInfoDto.LoanNumber</span>
+            </div>
+            <div class="d-flex flex-row">
+                <span class="title" style="width: 30%;">Rachunek do spłaty</span>
+                <span class="item" style="width: 70%;">@AccountInfoDto.CCNumberToRepayment</span>
+            </div>
+            <div class="d-flex flex-row">
+                <span class="title">Adres email</span>
+                <span class="item">@AccountInfoDto.Email</span>
+            </div>
+            <div class="d-flex flex-row">
+                <span class="title">Numer telefonu</span>
+                <span class="item">@AccountInfoDto.Phone</span>
+            </div>
+        </div>
+    </div>
+}

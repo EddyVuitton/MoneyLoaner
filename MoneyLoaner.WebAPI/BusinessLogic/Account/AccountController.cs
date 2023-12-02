@@ -42,7 +42,6 @@ public class AccountController : ControllerBase
         try
         {
             var result = await _businessLogic.RegisterAsync(registerForm);
-
             return HttpApiHelper.Ok(result);
         }
         catch (Exception e)
@@ -68,6 +67,48 @@ public class AccountController : ControllerBase
         catch (Exception e)
         {
             return HttpApiHelper.Error<UserAccountDto>(e);
+        }
+    }
+
+    [HttpPost("UpdateEmailAsync")]
+    public async Task<HttpApiResponse> UpdateEmailAsync(int pk_id, string email)
+    {
+        try
+        {
+            await _businessLogic.UpdateEmailAsync(pk_id, email);
+            return HttpApiHelper.Ok();
+        }
+        catch (Exception e)
+        {
+            return HttpApiHelper.Error(e);
+        }
+    }
+
+    [HttpPost("UpdatePhoneAsync")]
+    public async Task<HttpApiResponse> UpdatePhoneAsync(int pk_id, string phone)
+    {
+        try
+        {
+            await _businessLogic.UpdatePhoneAsync(pk_id, phone);
+            return HttpApiHelper.Ok();
+        }
+        catch (Exception e)
+        {
+            return HttpApiHelper.Error(e);
+        }
+    }
+
+    [HttpPost("UpdatePasswordAsync")]
+    public async Task<HttpApiResponse> UpdatePasswordAsync(UpdatePasswordForm updatePasswordForm)
+    {
+        try
+        {
+            await _businessLogic.UpdatePasswordAsync(updatePasswordForm);
+            return HttpApiHelper.Ok();
+        }
+        catch (Exception e)
+        {
+            return HttpApiHelper.Error(e);
         }
     }
 }

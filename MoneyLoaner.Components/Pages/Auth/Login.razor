@@ -7,13 +7,14 @@
             <MudCard>
                 <MudCardContent>
                     <MudTextField @bind-Value="_model.PersonalNumber"
-                                  Label="Numer pesel"
-                                  For="@(() => _model.PersonalNumber)" />
+                                  Label="PESEL"
+                                  For="@(() => _model.PersonalNumber)"
+                                  Mask="@(new PatternMask("00000000000"))" />
                     <MudTextField @bind-Value="_model.Email"
                                   Label="Adres email"
                                   For="@(() => _model.Email)" />
                     <MudTextField @bind-Value="_model.Password"
-                                  Label="Password" HelperText="Wybierz silne hasło" Class="mt-3"
+                                  Label="Hasło" Class="mt-3"
                                   For="@(() => _model.Password)" InputType="InputType.Password" />
                 </MudCardContent>
                 <MudCardActions>

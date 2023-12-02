@@ -5,7 +5,7 @@ namespace MoneyLoaner.Data.Forms;
 public class LoginAccountForm
 {
     [Required(ErrorMessage = "To pole jest wymagane...")]
-    [StringLength(11)]
+    [StringLength(11, ErrorMessage = "Niepoprawny numer pesel")]
     public string? PersonalNumber { get; set; }
 
     [Required(ErrorMessage = "To pole jest wymagane...")]

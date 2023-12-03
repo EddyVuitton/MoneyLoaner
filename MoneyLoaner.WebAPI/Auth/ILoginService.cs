@@ -1,8 +1,12 @@
-﻿namespace MoneyLoaner.WebAPI.Auth;
+﻿using MoneyLoaner.WebAPI.Data;
+
+namespace MoneyLoaner.WebAPI.Auth;
 
 public interface ILoginService
 {
-    public Task LoginAsync(string token);
+    Task LoginAsync(UserToken userToken);
 
-    public Task LogoutAsync();
+    Task LogoutAsync();
+
+    Task<int> IsLoggedInAsync();
 }

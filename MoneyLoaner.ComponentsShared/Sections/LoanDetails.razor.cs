@@ -18,18 +18,7 @@ public partial class LoanDetails
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
-
-        _DayOfDatePayment = LoanDto.FirstInstallmentPaymentDate;
-        _dateRangeMin = new DateTime(_now.Year, _now.Month, 1)
-            .AddMonths(1)
-            .AddDays(-1)
-            .AddDays(-3)
-            .Date.ToString("yyyy-MM-dd");
-        _dateRangeMax = new DateTime(_now.AddMonths(1).Year, _now.AddMonths(1).Month, 1)
-            .AddMonths(1)
-            .AddDays(-1)
-            .AddDays(-4)
-            .Date.ToString("yyyy-MM-dd");
+        InitFields();
     }
 
     protected override async Task OnAfterRenderAsync(bool b)
@@ -56,5 +45,20 @@ public partial class LoanDetails
             _DayOfDatePayment = Convert.ToDateTime(e.Value);
             ParamChangeDatePayment.Invoke(_DayOfDatePayment);
         }
+    }
+
+    private void InitFields()
+    {
+        _DayOfDatePayment = LoanDto.FirstInstallmentPaymentDate;
+        _dateRangeMin = new DateTime(_now.Year, _now.Month, 1)
+            .AddMonths(1)
+            .AddDays(-1)
+            .AddDays(-3)
+            .Date.ToString("yyyy-MM-dd");
+        _dateRangeMax = new DateTime(_now.AddMonths(1).Year, _now.AddMonths(1).Month, 1)
+            .AddMonths(1)
+            .AddDays(-1)
+            .AddDays(-4)
+            .Date.ToString("yyyy-MM-dd");
     }
 }

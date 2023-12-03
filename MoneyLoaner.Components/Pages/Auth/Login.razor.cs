@@ -11,19 +11,22 @@ namespace MoneyLoaner.Components.Pages.Auth;
 
 public partial class Login
 {
-    [Inject] public IApplicationService? ApplicationService { get; set; }
-    [Inject] public ISnackbarHelper? SnackbarHelper { get; set; }
-    [Inject] public IJSRuntime? JS { get; set; }
-    [Inject] public ILoginService? LoginService { get; set; }
-    [Inject] public NavigationManager? NavigationManager { get; set; }
+#nullable disable
+    [Inject] public IApplicationService ApplicationService { get; set; }
+    [Inject] public ISnackbarHelper SnackbarHelper { get; set; }
+    [Inject] public IJSRuntime JS { get; set; }
+    [Inject] public ILoginService LoginService { get; set; }
+    [Inject] public NavigationManager NavigationManager { get; set; }
+#nullable enable
 
-    private LoginAccountForm _model = new();
+    private readonly LoginAccountForm _model = new();
 
     private async void OnValidSubmit(EditContext context)
     {
         try
         {
-            var response = await ApplicationService!.LoginAsync((LoginAccountForm)context.Model);
+            var loginForm = (LoginAccountForm)context.Model;
+            var response = await ApplicationService!.LoginAsync(loginForm);
 
             if (!response.IsSuccess)
             {
@@ -31,11 +34,9 @@ public partial class Login
                 return;
             }
 
-            var userToken = response!.Data!.Token;
-
-            if (!string.IsNullOrWhiteSpace(userToken))
+            if (response.Data is not null)
             {
-                await LoginService!.LoginAsync(userToken);
+                await LoginService!.LoginAsync(response.Data);
                 NavigationManager!.NavigateTo("account");
             }
         }

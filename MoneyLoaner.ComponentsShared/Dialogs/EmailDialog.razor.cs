@@ -20,11 +20,6 @@ public partial class EmailDialog
     private readonly ProposalDto _proposalDto = new();
     private readonly ProposalModelFluentValidator _proposalValidator = new();
 
-    protected override async Task OnInitializedAsync()
-    {
-        await base.OnInitializedAsync();
-    }
-
     private async Task Submit()
     {
         await _form.Validate();
@@ -32,8 +27,14 @@ public partial class EmailDialog
         if (_form.IsValid)
         {
             var result = await ApplicationService.UpdateEmailAsync(1, _proposalDto.Email!);
-            this.Close();
 
+            if (!result.IsSucces)
+            {
+                AccountInfoRef.FailureAfterSubmitSnackbar(result.Message!);
+                return;
+            }
+
+            this.Close();
             AccountInfoRef.AfterChangeEmailSubmit(result.IsSucces, _proposalDto.Email!);
         }
     }

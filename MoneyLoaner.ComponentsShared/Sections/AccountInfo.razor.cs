@@ -27,6 +27,11 @@ public partial class AccountInfo
         AccountInfoDto ??= new();
     }
 
+    public void FailureAfterSubmitSnackbar(string message)
+    {
+        SnackbarHelper.Show(message, Severity.Error, false, false);
+    }
+
     #region ChangeEmail
 
     private void DialogChangeEmail()
@@ -131,11 +136,6 @@ public partial class AccountInfo
         {
             SnackbarHelper.Show("Błąd przy zmianie hasła", Severity.Warning, true, false);
         }
-    }
-
-    public void WrongOldPasswordSnackbar(string message)
-    {
-        SnackbarHelper.Show(message, Severity.Error, false, false);
     }
 
     #endregion ChangePassword

@@ -21,11 +21,6 @@ public partial class PhoneDialog
     private readonly ProposalDto _proposalDto = new();
     private readonly ProposalModelFluentValidator _proposalValidator = new();
 
-    protected override async Task OnInitializedAsync()
-    {
-        await base.OnInitializedAsync();
-    }
-
     private async Task Submit()
     {
         await _form.Validate();

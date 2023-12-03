@@ -1,7 +1,7 @@
 ﻿@page "/login/"
 
-<div class="d-flex justify-center" style="width: 100%;">
-    <div style="width: 500px;">
+<div class="d-flex justify-center" style="width: 100%; height: 50vh;">
+    <div class="align-self-center" style="width: 500px;">
         <EditForm Model="@_model" OnValidSubmit="OnValidSubmit" style="width: 100%;">
             <DataAnnotationsValidator />
             <MudCard>
@@ -14,7 +14,7 @@
                                   Label="Adres email"
                                   For="@(() => _model.Email)" />
                     <MudTextField @bind-Value="_model.Password"
-                                  Label="Hasło" Class="mt-3"
+                                  Label="Powtórz hasło" Class="mt-3"
                                   For="@(() => _model.Password)" InputType="InputType.Password" />
                 </MudCardContent>
                 <MudCardActions>

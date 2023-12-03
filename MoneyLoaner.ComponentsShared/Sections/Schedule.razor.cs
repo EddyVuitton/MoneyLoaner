@@ -16,9 +16,4 @@ public partial class Schedule
 #nullable enable
 
     [Parameter] public List<LoanInstallmentDto>? InstallmentDtos { get; set; }
-
-    protected async override Task OnInitializedAsync()
-    {
-        await base.OnInitializedAsync();
-    }
 }

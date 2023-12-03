@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.JSInterop;
+using MoneyLoaner.WebAPI.Data;
 using MoneyLoaner.WebAPI.Extensions;
 using System.Net.Http.Headers;
 using System.Security.Claims;
@@ -21,6 +22,8 @@ public class JWTAuthenticationStateProvider : AuthenticationStateProvider, ILogi
         _js = js;
         _httpClient = httpClient;
     }
+
+    #region PublicMethods
 
     public async override Task<AuthenticationState> GetAuthenticationStateAsync()
     {
@@ -44,6 +47,38 @@ public class JWTAuthenticationStateProvider : AuthenticationStateProvider, ILogi
         _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer", token);
         return new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity(ParseClaimsFromJwt(token), "jwt")));
     }
+
+    public async Task<int> IsLoggedInAsync()
+    {
+        var authenticationState = await this.GetAuthenticationStateAsync();
+
+        if (authenticationState is not null && authenticationState.User.Claims.Any())
+        {
+            var result = authenticationState.User.Claims.FirstOrDefault(x => x.Type == "UserAccountId")?.Value;
+            if (int.TryParse(result, out int userAccountId))
+            {
+                return userAccountId;
+            }
+        }
+
+        return -1;
+    }
+
+    public async Task LoginAsync(UserToken userToken)
+    {
+        await _js.SetInLocalStorage(_TOKENKEY, userToken.Token);
+        var authState = BuildAuthenticationState(userToken.Token);
+        NotifyAuthenticationStateChanged(Task.FromResult(authState));
+    }
+
+    public async Task LogoutAsync()
+    {
+        await CleanUpAsync();
+    }
+
+    #endregion PublicMethods
+
+    #region PrivateMethods
 
     private static IEnumerable<Claim> ParseClaimsFromJwt(string jwt)
     {
@@ -90,22 +125,12 @@ public class JWTAuthenticationStateProvider : AuthenticationStateProvider, ILogi
         return Convert.FromBase64String(base64);
     }
 
-    public async Task LoginAsync(string token)
-    {
-        await _js.SetInLocalStorage(_TOKENKEY, token);
-        var authState = BuildAuthenticationState(token);
-        NotifyAuthenticationStateChanged(Task.FromResult(authState));
-    }
-
-    public async Task LogoutAsync()
-    {
-        await CleanUpAsync();
-    }
-
     private async Task CleanUpAsync()
     {
         await _js.RemoveItemFromLocalStorage(_TOKENKEY);
         _httpClient.DefaultRequestHeaders.Authorization = null;
         NotifyAuthenticationStateChanged(Task.FromResult(_anonymous));
     }
+
+    #endregion PrivateMethods
 }

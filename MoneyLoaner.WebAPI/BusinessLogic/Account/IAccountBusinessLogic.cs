@@ -6,7 +6,7 @@ namespace MoneyLoaner.WebAPI.BusinessLogic.Account;
 
 public interface IAccountBusinessLogic
 {
-    Task<UserAccountDto?> GetUserAccountInfoAsync(string email);
+    Task<UserAccountDto?> GetUserAccountInfoAsync(string email = "", int pk_id = 0, string pesel = "");
 
     Task<UserToken> LoginAsync(LoginAccountForm loginForm);
 

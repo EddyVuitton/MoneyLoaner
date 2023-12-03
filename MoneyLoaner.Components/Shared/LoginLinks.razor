@@ -1,0 +1,13 @@
+﻿<CascadingAuthenticationState>
+    <AuthorizeView>
+        <Authorized>
+            <MudPaper Elevation="0" Class="d-flex align-content-center flex-wrap" Style="background-color: inherit;">
+                <MudButton OnClick="LogOut" StartIcon="@Icons.Material.Filled.Logout" Style="color: #FFFFFF;">Wyloguj się</MudButton>
+            </MudPaper>
+        </Authorized>
+        <NotAuthorized>
+            <MudButton OnClick="NavigateToLoginPage" StartIcon="@Icons.Material.Filled.Login" Style="color: #FFFFFF;">Zaloguj się</MudButton>
+            <MudIconButton OnClick="NavigateToRegistrationPage" Icon="fa-solid fa-user-plus" Style="color: #FFFFFF;" />
+        </NotAuthorized>
+    </AuthorizeView>
+</CascadingAuthenticationState>

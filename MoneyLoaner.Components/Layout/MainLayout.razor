@@ -4,14 +4,26 @@
 <MudDialogProvider />
 <MudSnackbarProvider />
 
-<MudLayout>
-    <MudAppBar Elevation="0"
-               Class=""
-               Style="height: 100px;"
-               Dense="true"
-               Fixed="false">
-    </MudAppBar>
-    <MudMainContent Style="padding: 0px;">
-        @Body
-    </MudMainContent>
-</MudLayout>
+<CascadingAuthenticationState>
+    <MudLayout>
+        <MudAppBar Elevation="0"
+                   Class=""
+                   Style=""
+                   Dense="true"
+                   Fixed="false">
+            <div class="d-flex flex-row" style="width: 100%;">
+                <div class="d-flex justify-start flex-shrink-1" style="width: 50%;">
+                    <MudIconButton OnClick="NavToIndex" Icon="@Icons.Material.Filled.Home" Style="color: #FFFFFF;" />
+                </div>
+                <div class="d-flex justify-end" style="width: 50%;">
+                    <LoginLinks />
+                </div>
+            </div>
+        </MudAppBar>
+        <MudMainContent Style="padding: 0px;">
+            <CascadingValue Value="@_userAccountId" Name="CaseId">
+                @Body
+            </CascadingValue>
+        </MudMainContent>
+    </MudLayout>
+</CascadingAuthenticationState>

@@ -3,11 +3,8 @@ using Microsoft.JSInterop;
 using MoneyLoaner.ComponentsShared.Helpers.Snackbar;
 using MoneyLoaner.ComponentsShared.Subsections;
 using MoneyLoaner.Data.DTOs;
-using MoneyLoaner.WebAPI.Extensions;
-using MoneyLoaner.WebAPI.Helpers;
 using MoneyLoaner.WebAPI.Services.ApplicationService;
 using MudBlazor;
-using System.Text.Json;
 
 namespace MoneyLoaner.ComponentsShared.Sections;
 
@@ -69,15 +66,6 @@ public partial class LoanInfo
         };
     }
 
-    private async Task StoreDataInLocalStorage(NewProposalDto newProposal)
-    {
-        if (JS is not null)
-        {
-            var json = JsonSerializer.Serialize(newProposal);
-            await JS.SetInLocalStorage(EncryptHelper.Encrypt("newproposal"), EncryptHelper.Encrypt(json));
-        }
-    }
-
     private async Task ChangeDatePayment(DateTime? day)
     {
         if (day is not null)
@@ -101,12 +89,11 @@ public partial class LoanInfo
         await Task.Delay(3000);
 
         _newProposalDto = new() { LoanDto = _loan, ProposalDto = proposalDto };
-        await StoreDataInLocalStorage(_newProposalDto);
 
         try
         {
             var newProposal = await ApplicationService!.SubmitNewProposalAsync(_newProposalDto);
-            await JS.RemoveItemFromLocalStorage(EncryptHelper.Encrypt("loan"));
+            //await JS.RemoveItemFromLocalStorage(EncryptHelper.Encrypt("loan"));
 
             if (!newProposal.IsSucces)
             {

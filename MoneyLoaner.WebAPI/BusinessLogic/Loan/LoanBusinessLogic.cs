@@ -33,7 +33,7 @@ public class LoanBusinessLogic : ILoanBusinessLogic
         //dodaj rachunek bankowy, na który zostanie wypłacona pożyczka
         var bankAccountId = await AddNewCCNumberIdAsync();
 
-        //dodaj nowy dług klienta
+        //dodaj nową pożyczkę klienta
         var loanId = await AddNewLoanAsync(customerId, bankAccountId);
 
         //dodaj nowy wniosek
@@ -123,7 +123,7 @@ public class LoanBusinessLogic : ILoanBusinessLogic
             { "@out_id", -1 }
         };
 
-        var newLoanId = await SqlHelper.ExecuteSqlQuerySingleAsync("exec p_pozyczka_dlug_dodaj @rb_id, @pk_id, @out_id out;", hT);
+        var newLoanId = await SqlHelper.ExecuteSqlQuerySingleAsync("exec p_pozyczka_dodaj @rb_id, @pk_id, @out_id out;", hT);
 
         return int.Parse(newLoanId["@out_id"]!.ToString()!);
     }

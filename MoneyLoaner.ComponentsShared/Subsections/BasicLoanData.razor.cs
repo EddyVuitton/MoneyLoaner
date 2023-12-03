@@ -2,9 +2,7 @@
 using Microsoft.JSInterop;
 using MoneyLoaner.ComponentsShared.Sections;
 using MoneyLoaner.Data.DTOs;
-using MoneyLoaner.WebAPI.Extensions;
 using MoneyLoaner.WebAPI.Helpers;
-using System.Text.Json;
 
 namespace MoneyLoaner.ComponentsShared.Subsections;
 
@@ -137,8 +135,8 @@ public partial class BasicLoanData
         Loan.InstallmentDtoList = _installmentListDto;
         LoanInfoRef.UpdateLoan(Loan);
 
-        var json = JsonSerializer.Serialize(Loan);
-        await JS.SetInLocalStorage(EncryptHelper.Encrypt("loan"), EncryptHelper.Encrypt(json));
+        //var json = JsonSerializer.Serialize(Loan);
+        //await JS.SetInLocalStorage(EncryptHelper.Encrypt("loan"), EncryptHelper.Encrypt(json));
     }
 
     public void Toggle()

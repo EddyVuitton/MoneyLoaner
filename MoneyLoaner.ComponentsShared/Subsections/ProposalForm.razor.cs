@@ -30,18 +30,6 @@ public partial class ProposalForm
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
-
-        _proposalDto = new()
-        {
-            Name = "X",
-            Surname = "Y",
-            CCNumber = "11111111111111111111111111",
-            Email = "abc@xyz.com",
-            MonthlyExpenses = 100,
-            MonthlyIncome = 200,
-            PersonalNumber = "01242425645",
-            PhoneNumber = "123456789"
-        };
         _proposalSectionWrapperBorderStyle = _DISABLEBORDERSTYLE;
     }
 
@@ -53,7 +41,7 @@ public partial class ProposalForm
         {
             await _form.Validate();
 
-            if (_proposalDto is not null)
+            if (_form.IsValid)
             {
                 await LoanInfoRef.SubmitNewProposal(_proposalDto);
             }

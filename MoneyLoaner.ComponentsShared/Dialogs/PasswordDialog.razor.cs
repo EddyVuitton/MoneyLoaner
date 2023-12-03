@@ -18,19 +18,13 @@ public partial class PasswordDialog
 
     private readonly UpdatePasswordForm _model = new();
 
-    protected override async Task OnInitializedAsync()
-    {
-        await base.OnInitializedAsync();
-        _model.UserAccountId = 1;
-    }
-
     private async void OnValidSubmit(EditContext context)
     {
         var result = await ApplicationService.UpdatePasswordAsync(_model);
 
-        if (!result.IsSucces && result.Message == "Nieprawidłowe stare hasło")
+        if (!result.IsSucces)
         {
-            AccountInfoRef.WrongOldPasswordSnackbar(result.Message);
+            AccountInfoRef.FailureAfterSubmitSnackbar(result.Message!);
             return;
         }
 

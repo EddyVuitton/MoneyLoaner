@@ -1,14 +1,17 @@
 ﻿@page "/account"
 
-<div class="d-flex justify-center" style="width: 100%; height: 600px;">
-    <div class="d-flex flex-row justify-space-between" style="width: 100%; margin: 0% 2%;">
-        <div style="width: 49%; padding: 2%;">
-            <AccountInfo AccountInfoDto="_accountInfoDto" />
-        </div>
-        <div style="width: 49%; overflow-y: scroll;">
-            <MudText Typo="Typo.h4" Style="margin: 2%;">Aktualny harmonogram</MudText>
-            <MudDivider />
-            <Schedule InstallmentDtos="_installmentDtos" />
+@if (_accountInfoDto is not null)
+{
+    <div class="d-flex justify-center" style="width: 100%; height: 90vh;">
+        <div class="d-flex flex-row justify-space-between" style="width: 100%; height: 100%; margin: 0% 2%;">
+            <div class="align-self-center" style="width: 49%; padding: 2%;">
+                <AccountInfo AccountInfoDto="_accountInfoDto" />
+            </div>
+            <div class="align-self-center" style="width: 49%; overflow-y: scroll;">
+                <MudText Typo="Typo.h4" Style="margin: 2%;">Aktualny harmonogram</MudText>
+                <MudDivider />
+                <Schedule InstallmentDtos="_installmentDtos" />
+            </div>
         </div>
     </div>
-</div>
+}

@@ -33,7 +33,7 @@ public class AccountBusinessLogic : IAccountBusinessLogic
             throw new Exception("Niepoprawna próba logowania");
 
         var result = false;
-        var dbAccountPassword = await GetAccountHashedPasswordAsync(loginForm.Email);
+        var dbAccountPassword = await GetAccountHashedPasswordAsync(email: loginForm.Email);
         var hashedPassword = AuthHelper.HashPassword(loginForm.Password);
 
         if (dbAccountPassword == hashedPassword)
@@ -41,8 +41,10 @@ public class AccountBusinessLogic : IAccountBusinessLogic
 
         if (result)
         {
+            var userAccountInfo = await this.GetUserAccountInfoAsync(pesel: loginForm.PersonalNumber!);
+
             var key = new SymmetricSecurityKey(_jwtKeyBytes);
-            var token = AuthHelper.BuildToken(loginForm.Email, key);
+            var token = AuthHelper.BuildToken(loginForm.Email, userAccountInfo!.Id, key);
 
             return token;
         }
@@ -57,7 +59,7 @@ public class AccountBusinessLogic : IAccountBusinessLogic
         if (registerForm is null || string.IsNullOrEmpty(registerForm.Email) || string.IsNullOrEmpty(registerForm.Password))
             throw new Exception("Niepoprawna próba rejestracji");
 
-        var userAccountInfo = await GetUserAccountInfoAsync(registerForm.Email);
+        var userAccountInfo = await this.GetUserAccountInfoAsync(email: registerForm.Email);
 
         if (userAccountInfo is null)
         {
@@ -78,20 +80,29 @@ public class AccountBusinessLogic : IAccountBusinessLogic
         }
     }
 
-    public async Task<UserAccountDto?> GetUserAccountInfoAsync(string email)
+    public async Task<UserAccountDto?> GetUserAccountInfoAsync(string email = "", int pk_id = 0, string pesel = "")
     {
-        return await GetUserAccountInfoStaticAsync(email);
+        return await GetUserAccountInfoStaticAsync(email, pk_id, pesel);
     }
 
     public async Task UpdateEmailAsync(int pk_id, string email)
     {
-        var hT = new object[]
-        {
-            SqlParam.CreateParameter("pk_id", pk_id, SqlDbType.Int),
-            SqlParam.CreateParameter("email", email, SqlDbType.NVarChar),
-        };
+        var userAccountInfo = await this.GetUserAccountInfoAsync(email: email);
 
-        await _context.SqlQueryAsync("exec p_klient_email_aktualizuj @pk_id, @email;", hT);
+        if (userAccountInfo is null)
+        {
+            var hT = new object[]
+            {
+                SqlParam.CreateParameter("pk_id", pk_id, SqlDbType.Int),
+                SqlParam.CreateParameter("email", email, SqlDbType.NVarChar),
+            };
+
+            await _context.SqlQueryAsync("exec p_klient_email_aktualizuj @pk_id, @email;", hT);
+        }
+        else
+        {
+            throw new Exception("Istnieje już konto z podanym adresem email");
+        }
     }
 
     public async Task UpdatePhoneAsync(int pk_id, string phone)
@@ -110,7 +121,7 @@ public class AccountBusinessLogic : IAccountBusinessLogic
         if (updatePasswordForm is null || string.IsNullOrEmpty(updatePasswordForm.Password) || string.IsNullOrEmpty(updatePasswordForm.OldPassword))
             throw new Exception("Niepoprawna próba zmiany hasła");
 
-        var userAccountInfoResult = await GetUserAccountInfoStaticAsync(updatePasswordForm.UserAccountId);
+        var userAccountInfoResult = await GetUserAccountInfoStaticAsync(pk_id: updatePasswordForm.UserAccountId);
 
         if (userAccountInfoResult is null)
             throw new Exception("Błąd przy pobraniu danych");
@@ -137,7 +148,7 @@ public class AccountBusinessLogic : IAccountBusinessLogic
 
     private static async Task<string> GetAccountHashedPasswordAsync(string email)
     {
-        var password = await GetUserAccountInfoStaticAsync(email);
+        var password = await GetUserAccountInfoStaticAsync(email: email);
 
         if (password is null || password.Password is null)
             return string.Empty;
@@ -145,31 +156,16 @@ public class AccountBusinessLogic : IAccountBusinessLogic
         return password.Password;
     }
 
-    private static async Task<UserAccountDto?> GetUserAccountInfoStaticAsync(string email)
+    private static async Task<UserAccountDto?> GetUserAccountInfoStaticAsync(string email = "", int pk_id = 0, string pesel = "")
     {
         var hT = new Hashtable
         {
-            { "@email", email }
+            { "@email", email },
+            { "@pk_id", pk_id },
+            { "@pesel", pesel }
         };
 
-        var userAccountInfo = await SqlHelper.ExecuteSqlQuerySingleAsync($"exec p_uzytkownik_konto_pobierz @email, null;", hT);
-
-        if (userAccountInfo.Count > 0)
-        {
-            return DtoHelper.ToUserAccountDto(userAccountInfo);
-        }
-
-        return null;
-    }
-
-    private static async Task<UserAccountDto?> GetUserAccountInfoStaticAsync(int pk_id)
-    {
-        var hT = new Hashtable
-        {
-            { "@pk_id", pk_id }
-        };
-
-        var userAccountInfo = await SqlHelper.ExecuteSqlQuerySingleAsync($"exec p_uzytkownik_konto_pobierz null, @pk_id;", hT);
+        var userAccountInfo = await SqlHelper.ExecuteSqlQuerySingleAsync($"exec p_uzytkownik_konto_pobierz @email, @pk_id, @pesel;", hT);
 
         if (userAccountInfo.Count > 0)
         {

@@ -109,12 +109,12 @@ create table telefon (
 );
 go
 
-create table pozyczka_dlug (
-	pd_id int primary key identity(1, 1),
-	pd_numer nvarchar(max) not null,
-	pd_rb_id int not null foreign key references rachunek_bankowy (rb_id),
-	pd_pk_id int not null foreign key references pozyczka_klient (pk_id),
-	pd_data_dodania datetime not null,
+create table pozyczka (
+	po_id int primary key identity(1, 1),
+	po_numer nvarchar(max) not null,
+	po_rb_id int not null foreign key references rachunek_bankowy (rb_id),
+	po_pk_id int not null foreign key references pozyczka_klient (pk_id),
+	po_data_dodania datetime not null,
 	aud_data datetime default getdate(),
 	aud_login nvarchar(max) default suser_name()
 );
@@ -122,7 +122,7 @@ go
 
 create table pozyczka_wniosek (
 	pwn_id int primary key identity(1, 1),
-	pwn_pd_id int not null foreign key references pozyczka_dlug (pd_id),
+	pwn_po_id int not null foreign key references pozyczka (po_id),
 	pwn_imie nvarchar(max) not null,
 	pwn_nazwisko nvarchar(max) not null,
 	pwn_numer_telefonu nvarchar(max) not null,
@@ -156,11 +156,11 @@ create table pozyczka_szczegoly_oferty (
 );
 go
 
-create table pozyczka (
-	po_id int primary key identity(1, 1),
-	po_pd_id int not null foreign key references pozyczka_dlug (pd_id),
-	po_nazwa nvarchar(max) not null,
-	po_data_dodania datetime not null,
+create table pozyczka_harmonogram (
+	ph_id int primary key identity(1, 1),
+	ph_po_id int not null foreign key references pozyczka (po_id),
+	ph_nazwa nvarchar(max) not null,
+	ph_data_dodania datetime not null,
 	aud_data datetime default getdate(),
 	aud_login nvarchar(max) default suser_name()
 );
@@ -168,7 +168,7 @@ go
 
 create table pozyczka_rata (
 	por_id int primary key identity(1, 1),
-	por_po_id int not null foreign key references pozyczka (po_id),
+	por_ph_id int not null foreign key references pozyczka_harmonogram (ph_id),
 	por_numer int not null,
 	por_data_wymagalnosci datetime not null,
 	aud_data datetime default getdate(),
@@ -520,15 +520,15 @@ begin
 end;
 go
 
-create or alter function dbo.f_pobierz_nowy_numer_dlugu()
+create or alter function dbo.f_pobierz_nowy_numer_pozyczki()
 returns nvarchar(max)
 as
 begin
 	declare @nowy_numer int;
 
-	select top 1 @nowy_numer = pd_id
-	from pozyczka_dlug
-	order by pd_data_dodania desc, pd_id desc
+	select top 1 @nowy_numer = po_id
+	from pozyczka
+	order by po_data_dodania desc, po_id desc
 
 	set @nowy_numer = (isnull(@nowy_numer, 0) + 100000) + 1;
 
@@ -536,15 +536,15 @@ begin
 end;
 go
 
-create or alter procedure p_pozyczka_dlug_dodaj
+create or alter procedure p_pozyczka_dodaj
 	@rb_id int,
 	@pk_id int,
 	@out_id int output
 as
 begin
-	declare @nowy_numer nvarchar(max) = dbo.f_pobierz_nowy_numer_dlugu();
+	declare @nowy_numer nvarchar(max) = dbo.f_pobierz_nowy_numer_pozyczki();
 
-	insert into pozyczka_dlug (pd_numer, pd_rb_id, pd_pk_id, pd_data_dodania)
+	insert into pozyczka (po_numer, po_rb_id, po_pk_id, po_data_dodania)
 	values (@nowy_numer, @rb_id, @pk_id, getdate());
 
 	set @out_id  = scope_identity();
@@ -552,7 +552,7 @@ end;
 go
 
 create or alter procedure p_pozyczka_wniosek_dodaj
-	@pd_id int,
+	@po_id int,
 	@imie nvarchar(max),
 	@nazwisko nvarchar(max),
 	@numer_telefonu nvarchar(max),
@@ -566,12 +566,12 @@ as
 begin
 	declare @now datetime = getdate();
 
-	insert into pozyczka_wniosek (pwn_pd_id, pwn_imie, pwn_nazwisko, pwn_numer_telefonu, pwn_pesel, pwn_email, pwn_miesieczny_dochod, pwn_miesieczne_wydatki, pwn_numer_konta, pwn_data_dodania)
-	values (@pd_id, @imie, @nazwisko, @numer_telefonu, @pesel, @email, @miesieczny_dochod, @miesieczne_wydatki, @numer_konta, @now);
+	insert into pozyczka_wniosek (pwn_po_id, pwn_imie, pwn_nazwisko, pwn_numer_telefonu, pwn_pesel, pwn_email, pwn_miesieczny_dochod, pwn_miesieczne_wydatki, pwn_numer_konta, pwn_data_dodania)
+	values (@po_id, @imie, @nazwisko, @numer_telefonu, @pesel, @email, @miesieczny_dochod, @miesieczne_wydatki, @numer_konta, @now);
 
 	set @out_id  = scope_identity();
 
-	declare @pk_id int = (select pd_pk_id from pozyczka_dlug where pd_id = @pd_id);
+	declare @pk_id int = (select po_pk_id from pozyczka where po_id = @po_id);
 
 	exec p_klient_email_aktualizuj @pk_id, @email;
 	exec p_klient_telefon_aktualizuj @pk_id, @numer_telefonu;
@@ -645,12 +645,14 @@ go
 
 create or alter procedure p_uzytkownik_konto_pobierz
 	@email nvarchar(max),
-	@pk_id int
+	@pk_id int,
+	@pesel varchar(11)
 as
 begin
 	select top 1 uk_id, uk_email, uk_haslo, uk_data_dodania, uk_czy_aktywne, uk_pk_id
 	from uzytkownik_konto
-	where uk_email = @email or uk_pk_id = @pk_id
+	join pozyczka_klient on pk_id = uk_pk_id
+	where uk_email = @email or uk_pk_id = @pk_id or pk_pesel = @pesel;
 end;
 go
 
@@ -702,11 +704,11 @@ return (
 );
 go
 
-create or alter procedure p_dodaj_harmonogram @pd_id int, @xml xml
+create or alter procedure p_dodaj_harmonogram @po_id int, @xml xml
 as
 begin
 	declare @now datetime = getdate();
-	declare @po_id int;
+	declare @ph_id int;
 	declare @raty table (por_id int, rata int);
 	declare @ksiegowania table (ks_id int, por_id int);
 
@@ -716,10 +718,10 @@ begin
 	from dbo.f_przerob_na_dekrety(cast(@xml as xml))
 	order by rata, konto
 
-	insert into pozyczka (po_pd_id, po_nazwa, po_data_dodania)
-	select @pd_id, 'Harmonogram pocz¹tkowy', @now;
+	insert into pozyczka_harmonogram (ph_po_id, ph_nazwa, ph_data_dodania)
+	select @po_id, 'Harmonogram pocz¹tkowy', @now;
 
-	set @po_id = scope_identity();
+	set @ph_id = scope_identity();
 
 	merge pozyczka_rata as t
 	using (
@@ -729,8 +731,8 @@ begin
 	) as s
 	on 1 = 0
 	when not matched then
-		insert (por_po_id, por_numer, por_data_wymagalnosci)
-		values (@po_id, rata, data_wymagalnosci)
+		insert (por_ph_id, por_numer, por_data_wymagalnosci)
+		values (@ph_id, rata, data_wymagalnosci)
 		output inserted.por_id, s.rata
 		into @raty (por_id, rata)
 	;
@@ -763,16 +765,30 @@ returns int
 begin
 	declare @aktualna_pozyczka int;
 
-	select top 1 @aktualna_pozyczka = pd_id
-	from pozyczka_dlug
-	where pd_pk_id = @pk_id
-	order by cast(pd_data_dodania as date) desc, pd_id desc
+	select top 1 @aktualna_pozyczka = po_id
+	from pozyczka
+	where po_pk_id = @pk_id
+	order by cast(po_data_dodania as date) desc, po_id desc
 
 	return @aktualna_pozyczka;
 end
 go
 
-create or alter procedure p_pobierz_harmonogram @po_id int
+create or alter function f_aktualny_harmonogram (@po_id int)
+returns int
+begin
+	declare @aktualny_harmonogram int;
+
+	select top 1 @aktualny_harmonogram = ph_id
+	from pozyczka_harmonogram
+	where ph_po_id = @po_id
+	order by cast(ph_data_dodania as date) desc, ph_id desc
+
+	return @aktualny_harmonogram;
+end
+go
+
+create or alter procedure p_pobierz_harmonogram @ph_id int
 as
 begin
 	select
@@ -792,42 +808,38 @@ begin
 	from pozyczka_rata
 	join ksiegowanie_dekret on por_id = ksd_por_id
 	join ksiegowanie on ks_id = ksd_ks_id
-	where por_po_id = @po_id
+	where por_ph_id = @ph_id
 	group by por_id, por_numer, por_data_wymagalnosci
 	order by PaymentDate
-end;
-go
-
-create or alter procedure p_pobierz_pozyczki_klienta @pk_id int
-as
-begin
-	select pd_id, pd_numer, pd_data_dodania, rb_numer, dbo.f_aktualna_pozyczka(pd_id) po_id_aktualna
-	from pozyczka_dlug
-	join rachunek_bankowy on rb_id = pd_rb_id
-	where pd_pk_id = @pk_id
 end;
 go
 
 create or alter procedure p_konto_informacje_pobierz @pk_id int
 as
 begin
+	declare @aktualna_pozyczka int = dbo.f_aktualna_pozyczka(@pk_id);
+
 	select
 		pk_numer [ClientNumber],
 		pk_imie [Name],
 		pk_nazwisko [Surname],
 		pk_pesel [PersonalNumber],
 		pk_data_dodania [AccountCreateDate],
-		pd_numer [LoanNumber],
-		rb_numer [CCNumberToRepayment],
+		isnull(po_id, 0) [LoanId],
+		isnull(po_numer, '') [LoanNumber],
+		isnull(rb_numer, '') [CCNumberToRepayment],
 		em_nazwa [Email],
 		tn_nazwa [Phone]
-	from pozyczka_dlug
-	join rachunek_bankowy on rb_id = pd_rb_id
-	join pozyczka_klient on pk_Id = pd_pk_id
+	from pozyczka_klient
 	join email on pk_id = em_pk_id and em_data_zakonczenia is null
 	join telefon on pk_id = tn_pk_id and tn_data_zakonczenia is null
+	left join (
+		select po_pk_id, po_id, po_numer, rb_numer
+		from pozyczka
+		join rachunek_bankowy on rb_id = po_rb_id
+		where po_id = @aktualna_pozyczka
+	) x on pk_id = po_pk_id
 	where
-		pk_id = @pk_id and
-		pd_id = dbo.f_aktualna_pozyczka(@pk_id)
+		pk_id = @pk_id
 end;
 go

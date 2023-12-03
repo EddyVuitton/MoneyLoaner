@@ -17,11 +17,12 @@ public static class AuthHelper
         return Convert.ToHexString(hashedPassword);
     }
 
-    public static UserToken BuildToken(string email, SymmetricSecurityKey symmetricSecurityKey)
+    public static UserToken BuildToken(string email, int userAccountId, SymmetricSecurityKey symmetricSecurityKey)
     {
         var claims = new List<Claim>()
         {
-            new Claim(ClaimTypes.Email, email)
+            new(ClaimTypes.Email, email),
+            new("UserAccountId", userAccountId.ToString())
         };
 
         var creds = new SigningCredentials(symmetricSecurityKey, SecurityAlgorithms.HmacSha256);

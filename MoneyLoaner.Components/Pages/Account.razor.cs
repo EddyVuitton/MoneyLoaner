@@ -5,8 +5,9 @@ using MoneyLoaner.ComponentsShared.Helpers.Snackbar;
 using MoneyLoaner.Data.DTOs;
 using MoneyLoaner.WebAPI.Auth;
 using MoneyLoaner.WebAPI.Services.ApplicationService;
+using MudBlazor;
 
-namespace MoneyLoaner.Components.Pages.Auth;
+namespace MoneyLoaner.Components.Pages;
 
 public partial class Account
 {
@@ -15,40 +16,37 @@ public partial class Account
     [Inject] public ISnackbarHelper SnackbarHelper { get; set; }
     [Inject] public IJSRuntime JS { get; set; }
     [Inject] public ILoginService LoginService { get; set; }
+    [Inject] public IDialogService DialogService { get; set; }
     [Inject] public NavigationManager NavigationManager { get; set; }
 #nullable enable
 
-    private List<LoanInstallmentDto> _installmentDtos = new();
+    private List<LoanInstallmentDto>? _installmentDtos;
     private AccountInfoDto? _accountInfoDto;
+    private bool _isLoggedIn = false;
+    private bool _firstEntry = true;
 
     protected async override Task OnInitializedAsync()
     {
-        var accountId = await this.NavIfNotLoggedIn();
+        await LoginService.LogoutIfExpiredTokenAsync();
+        var clientId = await LoginService.IsLoggedInAsync();
 
-        await LoadData(accountId);
-    }
-
-    #region PrivateMethods
-
-    private async Task<int> NavIfNotLoggedIn()
-    {
-        var isLoggedIn = await LoginService.IsLoggedInAsync();
-
-        if (int.IsNegative(isLoggedIn))
+        if (clientId > 0)
         {
-            NavigationManager.NavigateTo("/login");
+            await LoadData(clientId);
+            _isLoggedIn = true;
         }
 
-        return isLoggedIn;
+        _firstEntry = false;
     }
 
-    private async Task LoadData(int accountId)
+    private async Task LoadData(int clientId)
     {
-        var accountInfoResult = await ApplicationService.GetAccountInfoAsync(accountId);
+        var accountInfoResult = await ApplicationService.GetAccountInfoAsync(clientId);
 
         if (accountInfoResult is not null && accountInfoResult.Data is not null)
         {
             accountInfoResult.Data.Phone = ComponentsHelper.FormatPhoneNumber(accountInfoResult.Data.Phone);
+            accountInfoResult.Data.CCNumberToRepayment = ComponentsHelper.BasicNumberMaskFormatter(accountInfoResult.Data.CCNumberToRepayment!, "00 0000 0000 0000 0000 0000 0000");
 
             if (accountInfoResult.Data.LoanId > 0)
             {
@@ -59,6 +57,4 @@ public partial class Account
 
         _accountInfoDto = accountInfoResult?.Data;
     }
-
-    #endregion PrivateMethods
 }

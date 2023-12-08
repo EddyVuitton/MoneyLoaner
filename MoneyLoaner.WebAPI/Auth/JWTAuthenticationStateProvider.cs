@@ -2,6 +2,7 @@
 using Microsoft.JSInterop;
 using MoneyLoaner.WebAPI.Data;
 using MoneyLoaner.WebAPI.Extensions;
+using System.IdentityModel.Tokens.Jwt;
 using System.Net.Http.Headers;
 using System.Security.Claims;
 using System.Text.Json;
@@ -54,7 +55,7 @@ public class JWTAuthenticationStateProvider : AuthenticationStateProvider, ILogi
 
         if (authenticationState is not null && authenticationState.User.Claims.Any())
         {
-            var result = authenticationState.User.Claims.FirstOrDefault(x => x.Type == "UserAccountId")?.Value;
+            var result = authenticationState.User.Claims.FirstOrDefault(x => x.Type == "ClientId")?.Value;
             if (int.TryParse(result, out int userAccountId))
             {
                 return userAccountId;
@@ -62,6 +63,17 @@ public class JWTAuthenticationStateProvider : AuthenticationStateProvider, ILogi
         }
 
         return -1;
+    }
+
+    public async Task LogoutIfExpiredTokenAsync()
+    {
+        var now = DateTime.Now;
+        var validTo = await this.TokenValidToAsync();
+
+        if (validTo.CompareTo(now) <= 0)
+        {
+            await this.LogoutAsync();
+        }
     }
 
     public async Task LoginAsync(UserToken userToken)
@@ -130,6 +142,20 @@ public class JWTAuthenticationStateProvider : AuthenticationStateProvider, ILogi
         await _js.RemoveItemFromLocalStorage(_TOKENKEY);
         _httpClient.DefaultRequestHeaders.Authorization = null;
         NotifyAuthenticationStateChanged(Task.FromResult(_anonymous));
+    }
+
+    private async Task<DateTime> TokenValidToAsync()
+    {
+        var token = await _js.GetFromLocalStorage(_TOKENKEY);
+
+        if (!string.IsNullOrEmpty(token))
+        {
+            var validTo = new JwtSecurityTokenHandler().ReadToken(token).ValidTo.ToLocalTime();
+
+            return validTo;
+        }
+
+        return DateTime.Now;
     }
 
     #endregion PrivateMethods

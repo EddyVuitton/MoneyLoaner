@@ -13,7 +13,12 @@
                    Fixed="false">
             <div class="d-flex flex-row" style="width: 100%;">
                 <div class="d-flex justify-start flex-shrink-1" style="width: 50%;">
-                    <MudIconButton OnClick="NavToIndex" Icon="@Icons.Material.Filled.Home" Style="color: #FFFFFF;" />
+                    <MudIconButton OnClick="NavToIndex" Size="Size.Large" Icon="@Icons.Material.Filled.Home" Style="color: #FFFFFF;" />
+                    <AuthorizeView>
+                        <Authorized>
+                            <MudIconButton OnClick="NavToAccount" Icon="fa-solid fa-user" Style="color: #FFFFFF;" />
+                        </Authorized>
+                    </AuthorizeView>
                 </div>
                 <div class="d-flex justify-end" style="width: 50%;">
                     <LoginLinks />

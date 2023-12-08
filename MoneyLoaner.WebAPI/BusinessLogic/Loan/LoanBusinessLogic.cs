@@ -25,6 +25,11 @@ public class LoanBusinessLogic : ILoanBusinessLogic
         var proposal = newProposalDto.ProposalDto;
 
         if (loan is null || proposal is null)
+            throw new ArgumentNullException(nameof(newProposalDto));
+
+        ReplaceSpacesToEmptyString(proposal);
+
+        if (loan is null || proposal is null)
             throw new Exception("");
 
         //przygotuj id klienta
@@ -71,7 +76,7 @@ public class LoanBusinessLogic : ILoanBusinessLogic
 
     private static async Task AddInitialSchedule(LoanDto loan, int loanId)
     {
-        var xml = LoanHelper.GenerateXmlT(loan.InstallmentDtoList!, "raty");
+        var xml = LoanHelper.GenerateXmlT(loan, "raty");
         var hT = new Hashtable
         {
             { "@pd_id", loanId },
@@ -193,6 +198,13 @@ public class LoanBusinessLogic : ILoanBusinessLogic
         }
 
         return "11" + new string(randomChars);
+    }
+
+    private static void ReplaceSpacesToEmptyString(ProposalDto proposal)
+    {
+        proposal.CCNumber = proposal.CCNumber?.Replace(" ", "");
+        proposal.PhoneNumber = proposal.PhoneNumber?.Replace(" ", "");
+        proposal.Email = proposal.Email?.Replace(" ", "");
     }
 
     #endregion PrivateMethods

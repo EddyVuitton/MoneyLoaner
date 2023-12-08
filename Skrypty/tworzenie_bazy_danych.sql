@@ -161,6 +161,8 @@ create table pozyczka_harmonogram (
 	ph_po_id int not null foreign key references pozyczka (po_id),
 	ph_nazwa nvarchar(max) not null,
 	ph_data_dodania datetime not null,
+	ph_data_rozpoczecia date not null,
+	ph_data_zakonczenia date not null,
 	aud_data datetime default getdate(),
 	aud_login nvarchar(max) default suser_name()
 );
@@ -340,20 +342,6 @@ begin --tworzenie synonimów
 end;
 go
 
-create or alter procedure p_klient_pobierz @pesel varchar(11)
-as
-begin
-	select
-		pk_id,
-		pk_numer,
-		pk_imie,
-		pk_nazwisko,
-		pk_pesel
-	from pozyczka_klient
-	where pk_pesel = @pesel
-end;
-go
-
 create or alter function dbo.f_pobierz_nowy_numer_klienta()
 returns nvarchar(max)
 as
@@ -370,39 +358,98 @@ begin
 end;
 go
 
-create or alter procedure p_pozyczka_klient_aktualizuj
-	@imie nvarchar(max),
-	@nazwisko nvarchar(max),
-	@pesel varchar(11),
-	@email nvarchar(max),
-	@numer_telefonu varchar(max),
-	@out_id int output
+create or alter function dbo.f_pobierz_nowy_numer_pozyczki()
+returns nvarchar(max)
 as
 begin
-	declare @nowy_numer nvarchar(max) = dbo.f_pobierz_nowy_numer_klienta();
-	declare @now datetime = getdate();
-	declare @pk_id int = (select top 1 pk_id from pozyczka_klient where pk_pesel = @pesel);
+	declare @nowy_numer int;
 
-	if (isnull(@pk_id, 0) = 0)
-	begin
-		insert into pozyczka_klient (pk_numer, pk_imie, pk_nazwisko, pk_pesel, pk_data_dodania)
-		values (@nowy_numer, @imie, @nazwisko, @pesel, @now);
+	select top 1 @nowy_numer = po_id
+	from pozyczka
+	order by po_data_dodania desc, po_id desc
 
-		set @out_id = scope_identity();
+	set @nowy_numer = (isnull(@nowy_numer, 0) + 100000) + 1;
 
-		insert into email (em_pk_id, em_nazwa, em_data_dodania, em_data_zakonczenia)
-		values (@out_id, @email, @now, null);
+	return '50' + cast(@nowy_numer as nvarchar(max));
+end;
+go
 
-		insert into telefon (tn_pk_id, tn_nazwa, tn_data_dodania, tn_data_zakonczenia)
-		values (@out_id, @numer_telefonu, @now, null);
-	end
-	else
-	begin
-		exec p_klient_email_aktualizuj @pk_id, @email;
-		exec p_klient_telefon_aktualizuj @pk_id, @numer_telefonu;
+create or alter function f_przerob_na_dekrety (	
+	@xml xml
+)
+returns table
+as
+return (
+	select rata, konto_nazwa, kwota, data_wymagalnosci, konto
+	from (
+		select
+			rata,
+			konto_nazwa,
+			kwota,
+			[data_wymagalnosci],
+			case konto_nazwa
+				when 'kapital' then 3
+				when 'odsetki' then 5
+				when 'prowizja' then 4
+			end konto
+		from (
+			select
+				y.value('(Number)[1]', 'int') [rata],
+				y.value('(Principal)[1]', 'decimal(18, 2)') [kapital],
+				y.value('(Interest)[1]', 'decimal(18, 2)') [odsetki],
+				y.value('(Fee)[1]', 'decimal(18, 2)') [prowizja],
+				y.value('(PaymentDate)[1]', 'date') [data_wymagalnosci]
+			from @xml.nodes('//raty/InstallmentDtoList/InstallmentDto') as x(y)
+		) x
+		unpivot (
+			kwota for konto_nazwa in ([kapital], [odsetki], [prowizja])
+		) unpvt
+		union all
+		select y.value('(Number)[1]', 'int'), 'techniczne', y.value('(Total)[1]', 'decimal(18, 2)'), y.value('(PaymentDate)[1]', 'date'), 1
+		from @xml.nodes('//raty/InstallmentDtoList/InstallmentDto') as x(y)
+	) y
+);
+go
 
-		set @out_id = @pk_id;
-	end
+create or alter function f_aktualna_pozyczka (@pk_id int)
+returns int
+begin
+	declare @aktualna_pozyczka int;
+
+	select top 1 @aktualna_pozyczka = po_id
+	from pozyczka
+	where po_pk_id = @pk_id
+	order by cast(po_data_dodania as date) desc, po_id desc
+
+	return @aktualna_pozyczka;
+end
+go
+
+create or alter function f_aktualny_harmonogram (@po_id int)
+returns int
+begin
+	declare @aktualny_harmonogram int;
+
+	select top 1 @aktualny_harmonogram = ph_id
+	from pozyczka_harmonogram
+	where ph_po_id = @po_id
+	order by cast(ph_data_dodania as date) desc, ph_id desc
+
+	return @aktualny_harmonogram;
+end
+go
+
+create or alter procedure p_klient_pobierz @pesel varchar(11)
+as
+begin
+	select
+		pk_id,
+		pk_numer,
+		pk_imie,
+		pk_nazwisko,
+		pk_pesel
+	from pozyczka_klient
+	where pk_pesel = @pesel
 end;
 go
 
@@ -465,6 +512,53 @@ begin
 end;
 go
 
+create or alter procedure p_pozyczka_klient_aktualizuj
+	@imie nvarchar(max),
+	@nazwisko nvarchar(max),
+	@pesel varchar(11),
+	@email nvarchar(max),
+	@numer_telefonu varchar(max),
+	@out_id int output
+as
+begin
+	declare @nowy_numer nvarchar(max) = dbo.f_pobierz_nowy_numer_klienta();
+	declare @now datetime = getdate();
+	declare @pk_id int = (select top 1 pk_id from pozyczka_klient where pk_pesel = @pesel);
+
+	if (isnull(@pk_id, 0) = 0)
+	begin
+		insert into pozyczka_klient (pk_numer, pk_imie, pk_nazwisko, pk_pesel, pk_data_dodania)
+		values (@nowy_numer, @imie, @nazwisko, @pesel, @now);
+
+		set @out_id = scope_identity();
+
+		insert into email (em_pk_id, em_nazwa, em_data_dodania, em_data_zakonczenia)
+		values (@out_id, @email, @now, null);
+
+		insert into telefon (tn_pk_id, tn_nazwa, tn_data_dodania, tn_data_zakonczenia)
+		values (@out_id, @numer_telefonu, @now, null);
+	end
+	else
+	begin
+		exec p_klient_email_aktualizuj @pk_id, @email;
+		exec p_klient_telefon_aktualizuj @pk_id, @numer_telefonu;
+
+		set @out_id = @pk_id;
+	end
+end;
+go
+
+create or alter procedure p_rachunek_bankowy_dodaj
+	@numer varchar(26),
+	@out_id int output
+as
+begin
+	insert into rachunek_bankowy (rb_numer) values (@numer);
+
+	set @out_id  = scope_identity();
+end;
+go
+
 create or alter procedure p_klient_rachunek_bankowy_aktualizuj
 	@pk_id int,
 	@numer_konta varchar(26)
@@ -509,33 +603,6 @@ begin
 end;
 go
 
-create or alter procedure p_rachunek_bankowy_dodaj
-	@numer varchar(26),
-	@out_id int output
-as
-begin
-	insert into rachunek_bankowy (rb_numer) values (@numer);
-
-	set @out_id  = scope_identity();
-end;
-go
-
-create or alter function dbo.f_pobierz_nowy_numer_pozyczki()
-returns nvarchar(max)
-as
-begin
-	declare @nowy_numer int;
-
-	select top 1 @nowy_numer = po_id
-	from pozyczka
-	order by po_data_dodania desc, po_id desc
-
-	set @nowy_numer = (isnull(@nowy_numer, 0) + 100000) + 1;
-
-	return '50' + cast(@nowy_numer as nvarchar(max));
-end;
-go
-
 create or alter procedure p_pozyczka_dodaj
 	@rb_id int,
 	@pk_id int,
@@ -569,7 +636,7 @@ begin
 	insert into pozyczka_wniosek (pwn_po_id, pwn_imie, pwn_nazwisko, pwn_numer_telefonu, pwn_pesel, pwn_email, pwn_miesieczny_dochod, pwn_miesieczne_wydatki, pwn_numer_konta, pwn_data_dodania)
 	values (@po_id, @imie, @nazwisko, @numer_telefonu, @pesel, @email, @miesieczny_dochod, @miesieczne_wydatki, @numer_konta, @now);
 
-	set @out_id  = scope_identity();
+	set @out_id = scope_identity();
 
 	declare @pk_id int = (select po_pk_id from pozyczka where po_id = @po_id);
 
@@ -626,6 +693,17 @@ create or alter procedure p_uzytkownik_konto_dodaj
 as
 begin
 	declare @pk_id int = (select top 1 pk_id from pozyczka_klient where pk_pesel = @pesel);
+	declare @uk_id int = (
+		select top 1 1
+		from uzytkownik_konto
+		join pozyczka_klient on pk_id = uk_pk_id
+		where pk_id = @pk_id and uk_email = @email
+	);
+
+	if (@uk_id is not null)
+	begin
+		raiserror('Istnieje ju¿ konto z podanym adresem email', 16, 1);
+	end
 
 	insert into uzytkownik_konto (uk_email, uk_haslo, uk_data_dodania, uk_czy_aktywne, uk_pk_id)
 	values (@email, @haslo, getdate(), 1, @pk_id);
@@ -667,43 +745,6 @@ begin
 end;
 go
 
-create or alter function f_przerob_na_dekrety (	
-	@xml xml
-)
-returns table
-as
-return (
-	select rata, konto_nazwa, kwota, data_wymagalnosci, konto
-	from (
-		select
-			rata,
-			konto_nazwa,
-			kwota,
-			[data_wymagalnosci],
-			case konto_nazwa
-				when 'kapital' then 3
-				when 'odsetki' then 5
-				when 'prowizja' then 4
-			end konto
-		from (
-			select
-				y.value('(Number)[1]', 'int') [rata],
-				y.value('(Principal)[1]', 'decimal(18, 2)') [kapital],
-				y.value('(Interest)[1]', 'decimal(18, 2)') [odsetki],
-				y.value('(Fee)[1]', 'decimal(18, 2)') [prowizja],
-				y.value('(PaymentDate)[1]', 'date') [data_wymagalnosci]
-			from @xml.nodes('//raty/InstallmentDto') as x(y)
-		) x
-		unpivot (
-			kwota for konto_nazwa in ([kapital], [odsetki], [prowizja])
-		) unpvt
-		union all
-		select y.value('(Number)[1]', 'int'), 'techniczne', y.value('(Total)[1]', 'decimal(18, 2)'), y.value('(PaymentDate)[1]', 'date'), 1
-		from @xml.nodes('//raty/InstallmentDto') as x(y)
-	) y
-);
-go
-
 create or alter procedure p_dodaj_harmonogram @po_id int, @xml xml
 as
 begin
@@ -711,6 +752,13 @@ begin
 	declare @ph_id int;
 	declare @raty table (por_id int, rata int);
 	declare @ksiegowania table (ks_id int, por_id int);
+	declare @StartDate date;
+	declare @LastInstallmentDate date;
+
+	select
+		@StartDate = y.value('(StartDate)[1]', 'date'),
+		@LastInstallmentDate = y.value('(LastInstallmentDate)[1]', 'date')
+	from @xml.nodes('//raty') as x(y)
 
 	drop table if exists #harm;
 	select rata, konto_nazwa, kwota, data_wymagalnosci, konto
@@ -718,8 +766,8 @@ begin
 	from dbo.f_przerob_na_dekrety(cast(@xml as xml))
 	order by rata, konto
 
-	insert into pozyczka_harmonogram (ph_po_id, ph_nazwa, ph_data_dodania)
-	select @po_id, 'Harmonogram pocz¹tkowy', @now;
+	insert into pozyczka_harmonogram (ph_po_id, ph_nazwa, ph_data_dodania, ph_data_rozpoczecia, ph_data_zakonczenia)
+	select @po_id, 'Harmonogram pocz¹tkowy', @now, @StartDate, @LastInstallmentDate;
 
 	set @ph_id = scope_identity();
 
@@ -758,34 +806,6 @@ begin
 	left join ksiegowanie_konto_subkonto on ksksub_ksk_id = harm.konto
 	order by harm.rata, konto
 end;
-go
-
-create or alter function f_aktualna_pozyczka (@pk_id int)
-returns int
-begin
-	declare @aktualna_pozyczka int;
-
-	select top 1 @aktualna_pozyczka = po_id
-	from pozyczka
-	where po_pk_id = @pk_id
-	order by cast(po_data_dodania as date) desc, po_id desc
-
-	return @aktualna_pozyczka;
-end
-go
-
-create or alter function f_aktualny_harmonogram (@po_id int)
-returns int
-begin
-	declare @aktualny_harmonogram int;
-
-	select top 1 @aktualny_harmonogram = ph_id
-	from pozyczka_harmonogram
-	where ph_po_id = @po_id
-	order by cast(ph_data_dodania as date) desc, ph_id desc
-
-	return @aktualny_harmonogram;
-end
 go
 
 create or alter procedure p_pobierz_harmonogram @ph_id int

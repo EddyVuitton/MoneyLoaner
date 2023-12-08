@@ -2,7 +2,7 @@
 using MoneyLoaner.ComponentsShared.Helpers.Snackbar;
 using MoneyLoaner.ComponentsShared.Sections;
 using MoneyLoaner.Data.DTOs;
-using MoneyLoaner.Data.FluentValidator;
+using MoneyLoaner.Data.Forms;
 using MoneyLoaner.WebAPI.Services.ApplicationService;
 using MudBlazor;
 
@@ -15,11 +15,9 @@ public partial class ProposalForm
     [Inject] public ISnackbarHelper SnackbarHelper { get; set; }
 
     [Parameter] public LoanInfo LoanInfoRef { get; set; }
-#nullable enable
 
-    private MudForm? _form;
-    private ProposalDto _proposalDto = new();
-    private readonly ProposalModelFluentValidator _proposalValidator = new();
+    private ApplicationForm _applicationForm = new();
+#nullable enable
 
     private string _proposalSectionWrapperBorderStyle = string.Empty;
     private const string _ACTIVEBORDERSTYLE = "border: 2px solid #594ae2;";
@@ -35,17 +33,27 @@ public partial class ProposalForm
 
     #region PrivateMethods
 
-    private async Task Submit()
+    private async Task OnValidSubmit()
     {
-        if (_form is not null)
+        var proposalDto = new ProposalDto
         {
-            await _form.Validate();
+            Name = _applicationForm.Name,
+            Surname = _applicationForm.Surname,
+            PhoneNumber = _applicationForm.PhoneNumber,
+            Email = _applicationForm.Email,
+            PersonalNumber = _applicationForm.PersonalNumber,
+            MonthlyIncome = _applicationForm.MonthlyIncome,
+            MonthlyExpenses = _applicationForm.MonthlyExpenses,
+            CCNumber = _applicationForm.CCNumber
+        };
 
-            if (_form.IsValid)
-            {
-                await LoanInfoRef.SubmitNewProposal(_proposalDto);
-            }
-        }
+        SnackbarHelper.Show("Wniosek został wysłany", Severity.Info, true, false);
+        await LoanInfoRef.SubmitNewProposal(proposalDto);
+    }
+
+    private void OnInvalidSubmit()
+    {
+        SnackbarHelper.Show("Uzupełnij poprawnie wszystkie pola", Severity.Warning, true, false);
     }
 
     private void CorrectLoan()
@@ -53,6 +61,10 @@ public partial class ProposalForm
         this.Toggle();
         LoanInfoRef.ToggleLoan();
     }
+
+    #endregion PrivateMethods
+
+    #region PublicMethods
 
     public void Toggle()
     {
@@ -62,5 +74,5 @@ public partial class ProposalForm
         StateHasChanged();
     }
 
-    #endregion PrivateMethods
+    #endregion PublicMethods
 }

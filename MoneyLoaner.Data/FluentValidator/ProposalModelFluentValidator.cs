@@ -51,16 +51,28 @@ public class ProposalModelFluentValidator : AbstractValidator<ProposalDto>
         RuleFor(x => x.CCNumber)
             .NotEmpty()
             .WithMessage("Pole nie może być puste...")
-            .Length(26, 26)
+            .Length(32, 32)
             .WithMessage("Podaj numer 26 cyfr...");
     }
 
     public Func<object, string, Task<IEnumerable<string>>> ValidateValues => async (model, propertyName) =>
     {
-        var result = await ValidateAsync(ValidationContext<ProposalDto>.CreateWithOptions((ProposalDto)model, x => x.IncludeProperties(propertyName)));
+        var result = await ValidateAsync(ValidationContext<ProposalDto>
+            .CreateWithOptions((ProposalDto)model, x => x.IncludeProperties(propertyName)));
         if (result.IsValid)
             return Array.Empty<string>();
 
         return result.Errors.Select(e => e.ErrorMessage);
     };
+
+    //public Func<object, string, Task<IEnumerable<string>>> ValidateValues2 => async (model, propertyName) =>
+    //{
+    //    var result = await ValidateAsync(ValidationContext<ProposalDto>
+    //        .CreateWithOptions((ProposalDto)model, x => x.UseCustomSelector(selector: FluentValidation.));
+
+    //    if (result.IsValid)
+    //        return Array.Empty<string>();
+
+    //    return result.Errors.Select(e => e.ErrorMessage);
+    //};
 }

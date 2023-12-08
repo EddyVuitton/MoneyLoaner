@@ -2,20 +2,22 @@
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.JSInterop;
 using MoneyLoaner.ComponentsShared.Helpers.Snackbar;
-using MoneyLoaner.Data.DTOs;
 using MoneyLoaner.Data.Forms;
 using MoneyLoaner.WebAPI.Services.ApplicationService;
 using MudBlazor;
 
-namespace MoneyLoaner.Components.Pages.Auth;
+namespace MoneyLoaner.ComponentsShared.Dialogs.Auth;
 
-public partial class Register
+public partial class RegisterDialog
 {
 #nullable disable
     [Inject] public IApplicationService ApplicationService { get; set; }
     [Inject] public ISnackbarHelper SnackbarHelper { get; set; }
     [Inject] public IJSRuntime JS { get; set; }
+    [Inject] public IDialogService DialogService { get; set; }
     [Inject] public NavigationManager NavigationManager { get; set; }
+
+    [CascadingParameter] private MudDialogInstance MudDialog { get; set; }
 #nullable enable
 
     private readonly RegisterAccountForm _model = new();
@@ -32,7 +34,8 @@ public partial class Register
                 return;
             }
 
-            NavigationManager!.NavigateTo("login");
+            SnackbarHelper.Show("Konto zostało poprawnie zarejestrowane", Severity.Success, true, false);
+            await OpenLoginDialog();
         }
         catch (Exception ex)
         {
@@ -40,4 +43,22 @@ public partial class Register
             SnackbarHelper.Show(ex.Message, Severity.Error);
         }
     }
+
+    private async Task OpenLoginDialog()
+    {
+        this.Cancel();
+        await Task.Delay(400);
+
+        var options = new DialogOptions
+        {
+            CloseOnEscapeKey = true,
+            NoHeader = true,
+            MaxWidth = MaxWidth.Small,
+            FullWidth = true
+        };
+
+        DialogService.Show<LoginDialog>(string.Empty, options);
+    }
+
+    private void Cancel() => MudDialog.Cancel();
 }

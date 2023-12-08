@@ -14,8 +14,8 @@ public partial class AccountInfo
     [Inject] public IApplicationService ApplicationService { get; set; }
     [Inject] public ISnackbarHelper SnackbarHelper { get; set; }
     [Inject] public IJSRuntime JS { get; set; }
+    [Inject] public IDialogService DialogService { get; set; }
     [Inject] public NavigationManager NavigationManager { get; set; }
-    [Inject] public IDialogService Dialog { get; set; }
 #nullable enable
 
     [Parameter] public AccountInfoDto? AccountInfoDto { get; set; }
@@ -49,7 +49,7 @@ public partial class AccountInfo
             { "AccountInfoRef", this }
         };
 
-        Dialog.Show<EmailDialog>(null, parameters, options);
+        DialogService.Show<EmailDialog>(null, parameters, options);
     }
 
     public void AfterChangeEmailSubmit(bool isSuccess, string email)
@@ -86,7 +86,7 @@ public partial class AccountInfo
             { "AccountInfoRef", this }
         };
 
-        Dialog.Show<PhoneDialog>(null, parameters, options);
+        DialogService.Show<PhoneDialog>(null, parameters, options);
     }
 
     public void AfterChangePhoneSubmit(bool isSuccess, string phone)
@@ -123,7 +123,7 @@ public partial class AccountInfo
             { "AccountInfoRef", this }
         };
 
-        Dialog.Show<PasswordDialog>(null, parameters, options);
+        DialogService.Show<PasswordDialog>(null, parameters, options);
     }
 
     public void AfterChangePasswordSubmit(bool isSuccess)

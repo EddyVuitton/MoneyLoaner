@@ -44,7 +44,7 @@ public class AccountBusinessLogic : IAccountBusinessLogic
             var userAccountInfo = await this.GetUserAccountInfoAsync(pesel: loginForm.PersonalNumber!);
 
             var key = new SymmetricSecurityKey(_jwtKeyBytes);
-            var token = AuthHelper.BuildToken(loginForm.Email, userAccountInfo!.Id, key);
+            var token = AuthHelper.BuildToken(loginForm.Email, userAccountInfo!.LoanCustomerId, key);
 
             return token;
         }

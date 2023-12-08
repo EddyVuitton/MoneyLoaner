@@ -3,6 +3,8 @@
 public class LoanDto
 {
     public DateTime StartDate { get; set; }
+    public DateTime LastInstallmentDate
+    { get { return InstallmentDtoList?.LastOrDefault()?.PaymentDate ?? DateTime.MinValue; } set { } }
     public DateTime FirstInstallmentPaymentDate { get; set; }
     public int DayOfDatePayment { get; set; }
     public int Installments { get; set; }

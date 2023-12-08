@@ -17,16 +17,16 @@ public static class AuthHelper
         return Convert.ToHexString(hashedPassword);
     }
 
-    public static UserToken BuildToken(string email, int userAccountId, SymmetricSecurityKey symmetricSecurityKey)
+    public static UserToken BuildToken(string email, int clientId, SymmetricSecurityKey symmetricSecurityKey)
     {
         var claims = new List<Claim>()
         {
             new(ClaimTypes.Email, email),
-            new("UserAccountId", userAccountId.ToString())
+            new("ClientId", clientId.ToString())
         };
 
         var creds = new SigningCredentials(symmetricSecurityKey, SecurityAlgorithms.HmacSha256);
-        var expiration = DateTime.UtcNow.AddMinutes(15d);
+        var expiration = DateTime.Now.AddMinutes(15d);
 
         JwtSecurityToken token = new(
             issuer: null,

@@ -14,13 +14,16 @@ public partial class MainLayout
 
     protected override async Task OnInitializedAsync()
     {
-        var isLoggedIn = await LoginService.IsLoggedInAsync();
-
-        //_userAccountId = isLoggedIn ?? 0;
+        await LoginService.LogoutIfExpiredTokenAsync();
     }
 
     private void NavToIndex()
     {
         NavigationManager.NavigateTo($"/", true);
+    }
+
+    private void NavToAccount()
+    {
+        NavigationManager.NavigateTo($"/account/", true);
     }
 }

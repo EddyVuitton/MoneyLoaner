@@ -7,16 +7,19 @@ using MoneyLoaner.WebAPI.Auth;
 using MoneyLoaner.WebAPI.Services.ApplicationService;
 using MudBlazor;
 
-namespace MoneyLoaner.Components.Pages.Auth;
+namespace MoneyLoaner.ComponentsShared.Dialogs.Auth;
 
-public partial class Login
+public partial class LoginDialog
 {
 #nullable disable
     [Inject] public IApplicationService ApplicationService { get; set; }
     [Inject] public ISnackbarHelper SnackbarHelper { get; set; }
     [Inject] public IJSRuntime JS { get; set; }
     [Inject] public ILoginService LoginService { get; set; }
+    [Inject] public IDialogService DialogService { get; set; }
     [Inject] public NavigationManager NavigationManager { get; set; }
+
+    [CascadingParameter] private MudDialogInstance MudDialog { get; set; }
 #nullable enable
 
     private readonly LoginAccountForm _model = new();
@@ -45,4 +48,22 @@ public partial class Login
             SnackbarHelper!.Show(ex.Message, Severity.Error);
         }
     }
+
+    private async Task OpenRegisterDialog()
+    {
+        this.Cancel();
+        await Task.Delay(250);
+
+        var options = new DialogOptions
+        {
+            CloseOnEscapeKey = false,
+            NoHeader = true,
+            MaxWidth = MaxWidth.Small,
+            FullWidth = true
+        };
+
+        DialogService.Show<RegisterDialog>(string.Empty, options);
+    }
+
+    private void Cancel() => MudDialog.Cancel();
 }

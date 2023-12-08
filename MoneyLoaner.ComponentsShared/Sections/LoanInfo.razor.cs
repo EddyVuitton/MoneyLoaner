@@ -1,8 +1,10 @@
 ﻿using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
+using MoneyLoaner.ComponentsShared.Dialogs.Auth;
 using MoneyLoaner.ComponentsShared.Helpers.Snackbar;
 using MoneyLoaner.ComponentsShared.Subsections;
 using MoneyLoaner.Data.DTOs;
+using MoneyLoaner.WebAPI.Auth;
 using MoneyLoaner.WebAPI.Services.ApplicationService;
 using MudBlazor;
 
@@ -14,6 +16,8 @@ public partial class LoanInfo
     [Inject] public IApplicationService ApplicationService { get; set; }
     [Inject] public ISnackbarHelper SnackbarHelper { get; set; }
     [Inject] public IJSRuntime JS { get; set; }
+    [Inject] public ILoginService LoginService { get; set; }
+    [Inject] public IDialogService DialogService { get; set; }
     [Inject] public NavigationManager NavigationManager { get; set; }
 #nullable enable
 
@@ -77,14 +81,45 @@ public partial class LoanInfo
         }
     }
 
+    private void OpenLoginDialog()
+    {
+        var options = new DialogOptions
+        {
+            CloseOnEscapeKey = false,
+            NoHeader = true,
+            MaxWidth = MaxWidth.Small,
+            FullWidth = true
+        };
+
+        DialogService.Show<LoginDialog>(string.Empty, options);
+    }
+
+    private void OpenRegisterDialog()
+    {
+        var options = new DialogOptions
+        {
+            CloseOnEscapeKey = false,
+            NoHeader = true,
+            MaxWidth = MaxWidth.Small,
+            FullWidth = true
+        };
+
+        DialogService.Show<RegisterDialog>(string.Empty, options);
+    }
+
+    private void ToggleLoading()
+    {
+        _submitProposalLoading = !_submitProposalLoading;
+        StateHasChanged();
+    }
+
     #endregion PrivateMethods
 
     #region PublicMethods
 
     public async Task SubmitNewProposal(ProposalDto proposalDto)
     {
-        _submitProposalLoading = true;
-        StateHasChanged();
+        ToggleLoading();
 
         await Task.Delay(3000);
 
@@ -92,30 +127,44 @@ public partial class LoanInfo
 
         try
         {
-            var newProposal = await ApplicationService!.SubmitNewProposalAsync(_newProposalDto);
-            //await JS.RemoveItemFromLocalStorage(EncryptHelper.Encrypt("loan"));
+            var newProposal = await ApplicationService.SubmitNewProposalAsync(_newProposalDto);
 
             if (!newProposal.IsSucces)
             {
                 throw new Exception(newProposal.Message!);
             }
 
+            SnackbarHelper!.Show("Wniosek został przetworzony", Severity.Success, true, false);
+
             var customerInfo = await ApplicationService!.GetUserAccountAsync(proposalDto.Email!);
 
             if (customerInfo.IsSuccess && customerInfo.Data is not null)
             {
-                NavigationManager?.NavigateTo("login");
+                var clientId = await LoginService.IsLoggedInAsync();
+
+                if (clientId < 0)
+                {
+                    OpenLoginDialog();
+                    SnackbarHelper!.Show("Zaloguj się, aby móc zobaczyć harmonogram spłat Twojej pożyczki", Severity.Info, false, false);
+                }
+                else
+                {
+                    SnackbarHelper!.Show("Na stronie Twojego konta pojawił się harmonogram spłat nowej pożyczki", Severity.Info, false, false);
+                }
             }
             else
             {
-                NavigationManager?.NavigateTo("register");
+                OpenRegisterDialog();
+                SnackbarHelper!.Show("Stwórz teraz swoje konto, aby zobaczyć harmonogram spłat Twojej pożyczki", Severity.Success, false, false);
             }
         }
         catch (Exception ex)
         {
             SnackbarHelper!.Show(ex.Message, Severity.Error);
-            _submitProposalLoading = false;
-            StateHasChanged();
+        }
+        finally
+        {
+            ToggleLoading();
         }
     }
 

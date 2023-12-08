@@ -20,7 +20,7 @@ public partial class AccountInfo
 
     [Parameter] public AccountInfoDto? AccountInfoDto { get; set; }
 
-    protected override async Task OnInitializedAsync()
+    protected async override Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
 

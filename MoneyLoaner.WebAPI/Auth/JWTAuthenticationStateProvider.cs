@@ -26,7 +26,7 @@ public class JWTAuthenticationStateProvider : AuthenticationStateProvider, ILogi
 
     #region PublicMethods
 
-    public async override Task<AuthenticationState> GetAuthenticationStateAsync()
+    public override async Task<AuthenticationState> GetAuthenticationStateAsync()
     {
         try
         {

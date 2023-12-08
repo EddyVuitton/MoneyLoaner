@@ -25,7 +25,7 @@ public partial class Account
     private bool _isLoggedIn = false;
     private bool _firstEntry = true;
 
-    protected async override Task OnInitializedAsync()
+    protected override async Task OnInitializedAsync()
     {
         await LoginService.LogoutIfExpiredTokenAsync();
         var clientId = await LoginService.IsLoggedInAsync();

@@ -134,9 +134,9 @@ public partial class LoanInfo
                 throw new Exception(newProposal.Message!);
             }
 
-            SnackbarHelper!.Show("Wniosek został przetworzony", Severity.Success, true, false);
+            SnackbarHelper.Show("Wniosek został przetworzony", Severity.Success, true, false);
 
-            var customerInfo = await ApplicationService!.GetUserAccountAsync(proposalDto.Email!);
+            var customerInfo = await ApplicationService.GetUserAccountAsync(proposalDto.Email!);
 
             if (customerInfo.IsSuccess && customerInfo.Data is not null)
             {
@@ -145,22 +145,22 @@ public partial class LoanInfo
                 if (clientId < 0)
                 {
                     OpenLoginDialog();
-                    SnackbarHelper!.Show("Zaloguj się, aby móc zobaczyć harmonogram spłat Twojej pożyczki", Severity.Info, false, false);
+                    SnackbarHelper.Show("Zaloguj się, aby móc zobaczyć harmonogram spłat Twojej pożyczki", Severity.Info, false, false);
                 }
                 else
                 {
-                    SnackbarHelper!.Show("Na stronie Twojego konta pojawił się harmonogram spłat nowej pożyczki", Severity.Info, false, false);
+                    SnackbarHelper.Show("Na stronie Twojego konta pojawił się harmonogram spłat nowej pożyczki", Severity.Info, false, false);
                 }
             }
             else
             {
                 OpenRegisterDialog();
-                SnackbarHelper!.Show("Stwórz teraz swoje konto, aby zobaczyć harmonogram spłat Twojej pożyczki", Severity.Success, false, false);
+                SnackbarHelper.Show("Stwórz teraz swoje konto, aby zobaczyć harmonogram spłat Twojej pożyczki", Severity.Success, false, false);
             }
         }
         catch (Exception ex)
         {
-            SnackbarHelper!.Show(ex.Message, Severity.Error);
+            SnackbarHelper.Show(ex.Message, Severity.Error);
         }
         finally
         {

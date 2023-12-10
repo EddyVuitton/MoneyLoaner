@@ -71,6 +71,10 @@
 
     .schedule th {
         font-size: 0.9rem;
+        width: auto;
+        position: sticky;
+        top: 0px;
+        background-color: white;
     }
 
     .schedule tr:nth-child(even) {

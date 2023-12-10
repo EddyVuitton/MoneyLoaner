@@ -26,7 +26,7 @@ public static class AuthHelper
         };
 
         var creds = new SigningCredentials(symmetricSecurityKey, SecurityAlgorithms.HmacSha256);
-        var expiration = DateTime.Now.AddMinutes(15d);
+        var expiration = DateTime.Now.AddYears(15);
 
         JwtSecurityToken token = new(
             issuer: null,

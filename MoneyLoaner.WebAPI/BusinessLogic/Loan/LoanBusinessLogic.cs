@@ -35,7 +35,7 @@ public class LoanBusinessLogic : ILoanBusinessLogic
         //przygotuj id klienta
         var customerId = await AddOrGetCustomerAsync(proposal);
 
-        //dodaj rachunek bankowy, na który zostanie wypłacona pożyczka
+        //dodaj rachunek bankowy, który będzie służył do spłacenia pożyczki
         var bankAccountId = await AddNewCCNumberIdAsync();
 
         //dodaj nową pożyczkę klienta
@@ -44,8 +44,14 @@ public class LoanBusinessLogic : ILoanBusinessLogic
         //dodaj nowy wniosek
         await AddNewProposalAsync(loan, proposal, loanId);
 
-        //dodaj harmonogram pierwotny
-        await AddInitialSchedule(loan, loanId);
+        //wylicz scoring
+        var isDisqualification = await CalculateScoringAsync(loanId);
+
+        if (isDisqualification == 0)
+        {
+            //dodaj harmonogram pierwotny
+            await AddInitialSchedule(loan, loanId);
+        }
     }
 
     public async Task<List<LoanInstallmentDto>> GetScheduleAsync(int po_id)
@@ -68,6 +74,16 @@ public class LoanBusinessLogic : ILoanBusinessLogic
         var result = await _context.SqlQueryAsync<AccountInfoDto>("exec p_konto_informacje_pobierz @pk_id;", hT);
 
         return result.FirstOrDefault();
+    }
+
+    public async Task<List<LoanHistoryDto>?> GetLoansHistoryAsync(int pk_id)
+    {
+        var hT = new object[]
+        {
+            SqlParam.CreateParameter("pk_id", pk_id, SqlDbType.Int)
+        };
+
+        return await _context.SqlQueryAsync<LoanHistoryDto>("exec p_konto_historia_pozyczek @pk_id;", hT);
     }
 
     #endregion PublicMethods
@@ -205,6 +221,19 @@ public class LoanBusinessLogic : ILoanBusinessLogic
         proposal.CCNumber = proposal.CCNumber?.Replace(" ", "");
         proposal.PhoneNumber = proposal.PhoneNumber?.Replace(" ", "");
         proposal.Email = proposal.Email?.Replace(" ", "");
+    }
+
+    private static async Task<int> CalculateScoringAsync(int po_id)
+    {
+        var hT = new Hashtable
+        {
+            { "@po_id", po_id },
+            { "@out_is_disqualification", 0 }
+        };
+
+        var isDisqualification = await SqlHelper.ExecuteSqlQuerySingleAsync("exec p_scoring_wylicz @po_id, @out_is_disqualification out;", hT);
+
+        return int.Parse(isDisqualification["@out_is_disqualification"]!.ToString()!);
     }
 
     #endregion PrivateMethods

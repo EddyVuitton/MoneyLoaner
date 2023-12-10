@@ -21,7 +21,7 @@ public static class ComponentsHelper
         }
     }
 
-    public static string BasicNumberMaskFormatter(string text, string format)
+    public static string BasicNumberMaskFormatter(string text, string format, bool addDefaultSymbols = true)
     {
         var sb = new StringBuilder();
         int textIndex = 0;
@@ -35,12 +35,12 @@ public static class ComponentsHelper
                     sb.Append(text[textIndex]);
                     textIndex++;
                 }
-                else
+                else if (addDefaultSymbols)
                 {
                     sb.Append('0');
                 }
             }
-            else
+            else if (addDefaultSymbols)
             {
                 sb.Append(symbol);
             }

@@ -8,12 +8,23 @@ else
 {
     @if (_isLoggedIn)
     {
-        <div class="d-flex justify-center" style="width: 100%; height: 90vh;">
-            <div class="d-flex flex-row justify-space-between" style="width: 100%; height: 100%; margin: 0% 2%;">
-                <div class="align-self-center" style="width: 49%; height: 600px;">
-                    <AccountInfo AccountInfoDto="_accountInfoDto" />
+        <div style="width: 100%; height: 90vh;">
+            <div class="d-flex flex-row justify-space-between" style="width: 100%; height: 100%; margin-top: 0.5%; padding: 0% 1%;">
+                <div class="d-flex flex-column gap-y-4" style="width: 49%;">
+                    <div>
+                        <AccountInfo AccountInfoDto="_accountInfoDto" />
+                    </div>
+                    <div class="d-flex flex-column align-self-start" style="width: 100%; overflow: auto;">
+                        <div class="d-flex justify-center">
+                            <MudText Typo="Typo.h4">Historia pożyczek</MudText>
+                        </div>
+                        <MudDivider />
+                        <div class="d-flex justify-center">
+                            <LoansHistory LoanHistoryDtos="_loanHistoryDtos" />
+                        </div>
+                    </div>
                 </div>
-                <div class="align-self-center" style="width: 49%; height: 600px; overflow-y: scroll;">
+                <div class="" style="width: 49%; overflow-y: scroll;">
                     <MudText Typo="Typo.h4">Harmonogram spłat rat</MudText>
                     <MudDivider />
                     <Schedule InstallmentDtos="_installmentDtos" />

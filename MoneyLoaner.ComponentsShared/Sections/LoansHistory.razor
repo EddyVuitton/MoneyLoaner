@@ -1,0 +1,26 @@
+﻿@if (LoanHistoryDtos is not null)
+{
+    <table class="schedule">
+        <tr>
+            <th>Numer wniosku</th>
+            <th>Data złożenia wniosku</th>
+            <th>Status wniosku</th>
+            <th>Numer pożyczki</th>
+            <th>Pozostała kwota do spłaty</th>
+        </tr>
+        @foreach (var x in LoanHistoryDtos.OrderByDescending(x => x.DateOfProposal).OrderByDescending(x => x.CurrentBalance))
+        {
+            <tr>
+                <td>@x.ProposalId</td>
+                <td>@x.DateOfProposal.ToString("dd.MM.yyyy HH:mm")</td>
+                <td>@x.ProposalStatus</td>
+                <td>@x.LoanNumber</td>
+                <td>@x.CurrentBalance.ToString("N2") zł</td>
+            </tr>
+        }
+    </table>
+}
+else
+{
+    <MudText Typo="Typo.h6" Style="margin: 2%;">Brak pożyczek...</MudText>
+}

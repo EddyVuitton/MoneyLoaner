@@ -2,12 +2,12 @@
 {
     <table class="schedule">
         <tr>
-            <th style="width: 5%; position: sticky; top: 0px; background-color: white;">Rata</th>
-            <th style="width: 15%; position: sticky; top: 0px; background-color: white;">Dzień wymagalności</th>
-            <th style="width: 10%; position: sticky; top: 0px; background-color: white;">Kapitał</th>
-            <th style="width: 15%; position: sticky; top: 0px; background-color: white;">Prowizja administracyjna</th>
-            <th style="width: 15%; position: sticky; top: 0px; background-color: white;">Odsetki umowne</th>
-            <th style="width: 15%; position: sticky; top: 0px; background-color: white;">Pozostała kwota do spłaty</th>
+            <th>Rata</th>
+            <th>Dzień wymagalności</th>
+            <th>Kapitał</th>
+            <th>Prowizja administracyjna</th>
+            <th>Odsetki umowne</th>
+            <th>Pozostała kwota do spłaty</th>
         </tr>
         @foreach (var x in InstallmentDtos.OrderBy(x => x.PaymentDate))
         {

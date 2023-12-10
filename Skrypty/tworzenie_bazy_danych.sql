@@ -42,6 +42,9 @@ go
 use money_loaner_data;
 go
 
+create schema scoring;
+go
+
 create table rachunek_bankowy (
 	rb_id int primary key identity(1, 1),
 	rb_numer varchar(26) not null,
@@ -121,7 +124,7 @@ create table pozyczka (
 go
 
 create table pozyczka_wniosek (
-	pwn_id int primary key identity(1, 1),
+	pwn_id int primary key identity(1000001, 1),
 	pwn_po_id int not null foreign key references pozyczka (po_id),
 	pwn_imie nvarchar(max) not null,
 	pwn_nazwisko nvarchar(max) not null,
@@ -231,39 +234,90 @@ create table ksiegowanie_dekret (
 );
 go
 
+create table scoring.model (
+	scrm_id int primary key identity(1, 1),
+	scrm_nazwa nvarchar(max) not null,
+	scrm_data_dodania datetime not null,
+	scrm_data_zakonczenia datetime null,
+	scrm_czy_aktywne as iif(scrm_data_zakonczenia is null, 1, 0),
+	aud_data datetime default getdate(),
+	aud_login nvarchar(max) default suser_name()
+);
+go
+
+create table scoring.pole (
+	scrp_id int primary key identity(1, 1),
+	scrp_scrm_id int not null foreign key references scoring.model (scrm_id),
+	scrp_nazwa nvarchar(max) not null,
+	scrp_skrot nvarchar(max) not null,
+	scrp_zapytanie nvarchar(max) not null,
+	scrp_data_dodania datetime not null,
+	scrp_data_zakonczenia datetime null,
+	scrp_czy_aktywne as iif(scrp_data_zakonczenia is null, 1, 0),
+	aud_data datetime default getdate(),
+	aud_login nvarchar(max) default suser_name()
+);
+go
+
+create table scoring.przeliczenie (
+	scrprz_id int primary key identity(1, 1),
+	scrprz_data_dodania datetime not null,
+	scrprz_data_zakonczenia datetime null,
+	scrprz_po_id int not null foreign key references pozyczka (po_id),
+	scrprz_scrm_id int not null foreign key references scoring.model (scrm_id),
+	scrprz_czy_dyskwalifikacja bit null,
+	aud_data datetime default getdate(),
+	aud_login nvarchar(max) default suser_name()
+);
+go
+
+create table scoring.wartosc (
+	scrw_id int primary key identity(1, 1),
+	scrw_scrp_id int not null foreign key references scoring.pole (scrp_id),
+	scrw_scrprz_id int not null foreign key references scoring.przeliczenie (scrprz_id),
+	scrw_wartosc bit not null,
+	scrw_start datetime not null,
+	scrw_koniec datetime not null,
+	scrw_blad nvarchar(max) null,
+	aud_data datetime default getdate(),
+	aud_login nvarchar(max) default suser_name()
+);
+go
+
 create database money_loaner_shdlog;
 go
 
-begin --tworzenie shadow loga
-	drop table if exists #tabele;
-	select  t.name table_name
-	into #tabele
-	from sys.tables t
+--begin --tworzenie shadow loga
+--	drop table if exists #tabele;
+--	select  t.name table_name
+--	into #tabele
+--	from sys.tables t
 
-	declare @c int = (select count(1) from #tabele);
-	declare @i int = 0;
+--	declare @c int = (select count(1) from #tabele);
+--	declare @i int = 0;
 
-	while (@i < @c)
-	begin
-		declare @table nvarchar(max) = (select top 1 table_name from #tabele);
-		declare @create_table_skrypt nvarchar(max) = 'select top 0 * into money_loaner_shdlog..' + @table + ' from ' + @table + '; alter table money_loaner_shdlog..' + @table + ' add aud_oper char;';
+--	while (@i < @c)
+--	begin
+--		declare @table nvarchar(max) = (select top 1 table_name from #tabele);
+--		declare @create_table_skrypt nvarchar(max) = 'select top 0 * into money_loaner_shdlog..' + @table + ' from ' + @table + '; alter table money_loaner_shdlog..' + @table + ' add aud_oper char;';
 
-		exec (@create_table_skrypt);
+--		exec (@create_table_skrypt);
 		
-		delete #tabele where table_name = @table;
-		set @i = @i + 1;
-	end
+--		delete #tabele where table_name = @table;
+--		set @i = @i + 1;
+--	end
 
-	-- ... to do ...
-end;
-go
+--	-- ... to do ...
+--end;
+--go
 
 begin --tworzenie triggerów
 	drop table if exists #triggery;
-	select c.object_id, c.name column_name, t.name table_name
+	select c.object_id, c.name column_name, t.name table_name, iif(s.name = 'dbo', null, s.name) schema_name
 	into #triggery
 	from sys.tables t
 	join sys.columns c on t.object_id = c.object_id
+	join sys.schemas s on s.schema_id = t.schema_id
 	where c.is_identity = 1
 
 	declare @c int = (select count(1) from #triggery);
@@ -272,9 +326,14 @@ begin --tworzenie triggerów
 	while (@i < @c)
 	begin
 		declare @table nvarchar(max) = (select top 1 table_name from #triggery);
+		declare @schema nvarchar(max) = (select schema_name from #triggery where table_name = @table);
+		declare @trigger_name nvarchar(max) = 'tr_' + isnull(@schema + '_', '') + @table + '_upd';
 		declare @column nvarchar(max) = (select column_name from #triggery where table_name = @table);
+
+		--select @table '@table', @schema '@schema', @trigger_name '@trigger_name', isnull(@schema + '.', '')
+
 		declare @trigger_skrypt nvarchar(max) = 
-'create or alter trigger tr_' + @table + '_upd on ' + @table + ' for update
+'create or alter trigger ' + @trigger_name + ' on ' + + isnull(@schema + '.', '') + @table + ' for update
 as
 begin
 	if (trigger_nestlevel() < 2)
@@ -286,6 +345,7 @@ begin
 		join inserted on inserted.' + @column + ' = ' + @table + '.' + @column + '
 	end
 end';		
+
 		exec (@trigger_skrypt);
 		delete #triggery where table_name = @table;
 		set @i = @i + 1;
@@ -311,6 +371,13 @@ begin --uzupe³nienie s³owników
 	(5, 'Odsetki umowne'),
 	(6, 'Zni¿ka/Rabat');
 	
+	insert into scoring.model (scrm_nazwa, scrm_data_dodania) values
+	('Pierwsze sprawdzenie klienta', getdate())
+
+	insert into scoring.pole (scrp_scrm_id, scrp_nazwa, scrp_skrot, scrp_zapytanie, scrp_data_dodania) values
+	(1, 'Klient jest zbyt m³ody', 'KL_WIEK', 'select scoring.wiek_klienta(@pozyczka_id);', getdate()),
+	(1, 'Niewystarczaj¹cy dochód klienta', 'KL_DOCH', 'select scoring.dochod_klienta(@pozyczka_id);', getdate()),
+	(1, 'Klient ma ju¿ otwart¹ po¿yczkê', 'KL_POZ', 'select scoring.otwarte_pozyczki_klienta(@pozyczka_id);', getdate())
 end;
 go
 
@@ -320,19 +387,26 @@ go
 use money_loaner_logic;
 go
 
+create schema scoring;
+go
+
 begin --tworzenie synonimów
 	drop table if exists #synonimy;
-	select t.name table_name
+	select t.name table_name, iif(s.name = 'dbo', null, s.name) schema_name
 	into #synonimy
-	from money_loaner_data. sys.tables t
+	from money_loaner_data.sys.tables t
+	join money_loaner_data.sys.schemas s on s.schema_id = t.schema_id
 
 	declare @c int = (select count(1) from #synonimy);
 	declare @i int = 0;
 
 	while (@i < @c)
 	begin
-		declare @table nvarchar(max) = (select top 1 table_name from #synonimy);
-		declare @synonim_skrypt nvarchar(max) = 'create synonym ' + @table + ' for money_loaner_data.dbo.' + @table + ';';
+		declare @table nvarchar(max), @schema nvarchar(max);
+		select top 1 @table = table_name, @schema = schema_name
+		from #synonimy
+
+		declare @synonim_skrypt nvarchar(max) = 'create synonym ' + isnull(@schema + '.', '') + @table + ' for money_loaner_data.' + isnull(@schema, 'dbo') + '.' + @table + ';';
 	
 		exec (@synonim_skrypt);
 	
@@ -340,6 +414,69 @@ begin --tworzenie synonimów
 		set @i = @i + 1;
 	end
 end;
+go
+
+create or alter function scoring.wiek_klienta(@pozyczka_id int)
+returns bit
+as
+begin
+	declare @result int = 0;
+
+	return @result;
+end;
+go
+
+create or alter function scoring.dochod_klienta(@pozyczka_id int)
+returns bit
+as
+begin
+	declare @result int = 0;
+
+	select @result = iif(pwn_miesieczny_dochod - pwn_miesieczne_wydatki < pszo_rata_od, 1, 0)
+	from pozyczka_wniosek
+	join pozyczka_szczegoly_oferty on pwn_id = pszo_pwn_id
+	where pwn_po_id = @pozyczka_id
+
+	return @result;
+end;
+go
+
+create or alter function scoring.otwarte_pozyczki_klienta(@pozyczka_id int)
+returns bit
+as
+begin
+	declare @result int;
+	declare @pk_id int = (select po_pk_id from pozyczka where po_id = @pozyczka_id);
+
+	select top 1 @result = 1
+	from pozyczka
+	join pozyczka_harmonogram on ph_id = dbo.f_aktualny_harmonogram(po_id)
+	join pozyczka_rata on ph_id = por_ph_id
+	join ksiegowanie_dekret on por_id = ksd_por_id
+	join ksiegowanie on ks_id = ksd_ks_id
+	where
+		po_pk_id = @pk_id
+	group by por_ph_id
+	having
+		sum(iif(ks_kst_id = 1, ksd_kwota_wn, 0)) -
+		sum(iif(ks_kst_id = 2, ksd_kwota_ma, 0)) > 0
+
+	return isnull(@result, 0);
+end;
+go
+
+create or alter function scoring.f_scoring_wynik (@po_id int)
+returns bit
+begin
+	declare @wynik int;
+
+	select top 1 @wynik = scrprz_czy_dyskwalifikacja
+	from scoring.przeliczenie
+	where scrprz_po_id = 1
+	order by scrprz_czy_dyskwalifikacja desc
+
+	return @wynik;
+end
 go
 
 create or alter function dbo.f_pobierz_nowy_numer_klienta()
@@ -418,8 +555,17 @@ begin
 
 	select top 1 @aktualna_pozyczka = po_id
 	from pozyczka
-	where po_pk_id = @pk_id
-	order by cast(po_data_dodania as date) desc, po_id desc
+	join pozyczka_harmonogram on ph_id = dbo.f_aktualny_harmonogram(po_id)
+	join pozyczka_rata on ph_id = por_ph_id
+	join ksiegowanie_dekret on por_id = ksd_por_id
+	join ksiegowanie on ks_id = ksd_ks_id
+	where
+		po_pk_id = @pk_id
+	group by po_id, po_data_dodania
+	having
+		sum(iif(ks_kst_id = 1, ksd_kwota_wn, 0)) -
+		sum(iif(ks_kst_id = 2, ksd_kwota_ma, 0)) > 0
+	order by po_data_dodania desc, po_id desc
 
 	return @aktualna_pozyczka;
 end
@@ -838,6 +984,7 @@ create or alter procedure p_konto_informacje_pobierz @pk_id int
 as
 begin
 	declare @aktualna_pozyczka int = dbo.f_aktualna_pozyczka(@pk_id);
+	declare @czy_zdyskwalifikowana_pozyczka bit = (select scoring.f_scoring_wynik(1));
 
 	select
 		pk_numer [ClientNumber],
@@ -845,9 +992,9 @@ begin
 		pk_nazwisko [Surname],
 		pk_pesel [PersonalNumber],
 		pk_data_dodania [AccountCreateDate],
-		isnull(po_id, 0) [LoanId],
-		isnull(po_numer, '') [LoanNumber],
-		isnull(rb_numer, '') [CCNumberToRepayment],
+		isnull(po_id, -1) [LoanId],
+		isnull(po_numer, '-') [LoanNumber],
+		isnull(rb_numer, '-') [CCNumberToRepayment],
 		em_nazwa [Email],
 		tn_nazwa [Phone]
 	from pozyczka_klient
@@ -857,9 +1004,125 @@ begin
 		select po_pk_id, po_id, po_numer, rb_numer
 		from pozyczka
 		join rachunek_bankowy on rb_id = po_rb_id
-		where po_id = @aktualna_pozyczka
+		where po_id = @aktualna_pozyczka and @czy_zdyskwalifikowana_pozyczka = 0
 	) x on pk_id = po_pk_id
 	where
 		pk_id = @pk_id
+end;
+go
+
+create or alter procedure p_scoring_wylicz
+	@po_id int,
+	@out_is_disqualification int output
+as
+begin
+	declare @now datetime = getdate();
+
+	if not exists (
+		select top 1 1
+		from pozyczka
+		where po_id = @po_id
+	)
+	begin
+		declare @error nvarchar(max) = concat('Brak po¿yczki z id [', cast(@po_id as varchar(max)), '] w systemie');
+		raiserror(@error, 16, 1);
+		return;
+	end
+
+	drop table if exists #modele;
+	select scrm_id as t_scrm_id
+	into #modele
+	from scoring.model
+	where scrm_czy_aktywne = 1
+
+	drop table if exists #pola;
+	select scrp_id, t_scrm_id, scrp_zapytanie, row_number() over (order by (select 0)) LP
+	into #pola
+	from #modele
+	join scoring.pole on t_scrm_id = scrp_scrm_id
+	where scrp_czy_aktywne = 1
+
+	declare @przeliczenia table (lp int, scrp_id int, scrm_id int, start datetime, koniec datetime, wynik bit, blad nvarchar(max));
+	declare @wynik table (wynik int);
+
+	declare @c int = (select count(1) from #pola);
+	declare @i int = 0;
+
+	while (@i < @c)
+	begin
+		declare @start datetime = getdate();
+		declare @aktualne_lp int, @scrm_id int, @scrprz_id int, @scrp_id int, @zapytanie nvarchar(max);
+
+		select top 1 @aktualne_lp = lp, @scrm_id = t_scrm_id, @scrp_id = scrp_id, @zapytanie = replace(scrp_zapytanie, '@pozyczka_id', cast(@po_id as varchar(max)))
+		from #pola
+	
+		begin try
+			insert into @wynik
+			exec (@zapytanie);
+
+			insert into @przeliczenia (lp, scrp_id, scrm_id, start, koniec, wynik)
+			select @aktualne_lp, @scrp_id, @scrm_id, @start, getdate(), wynik
+			from @wynik
+		end try
+		begin catch
+			insert into @przeliczenia (lp, scrp_id, scrm_id, start, koniec, wynik, blad)
+			values (@aktualne_lp, @scrp_id, @scrm_id, @start, getdate(), 0, error_message())
+		end catch
+
+		delete #pola where lp = @aktualne_lp;
+		delete @wynik;
+		set @i = @i + 1;
+	end
+
+	declare @dodane_przeliczenia table (t_scrprz_id int, t_scrm_id int);
+
+	merge scoring.przeliczenie as t
+	using (
+		select scrm_id, min(start) start, max(koniec) koniec, max(0 + wynik) wynik
+		from @przeliczenia
+		group by scrm_id
+	) as s
+	on 1 = 0
+	when not matched then
+		insert (scrprz_data_dodania, scrprz_data_zakonczenia, scrprz_po_id, scrprz_scrm_id, scrprz_czy_dyskwalifikacja)
+		values (s.start, s.koniec, @po_id, s.scrm_id, s.wynik)
+		output inserted.scrprz_id, s.scrm_id
+		into @dodane_przeliczenia (t_scrprz_id, t_scrm_id)
+	;
+
+	insert into scoring.wartosc (scrw_scrp_id, scrw_scrprz_id, scrw_wartosc, scrw_start, scrw_koniec, scrw_blad)
+	select t2.scrp_id, t1.t_scrprz_id, t2.wynik, t2.start, t2.koniec, t2.blad
+	from @dodane_przeliczenia t1
+	join @przeliczenia t2 on t1.t_scrm_id = t2.scrm_id
+
+	select @out_is_disqualification = max(0 + wynik)
+	from @przeliczenia
+end;
+go
+
+create or alter procedure p_konto_historia_pozyczek @pk_id int
+as
+begin
+	select
+		pwn_id ProposalId
+		,pwn_data_dodania DateOfProposal
+		,iif(scrprz_czy_dyskwalifikacja = 1, 'Wniosek odrzucony', iif(saldo_aktualne > 0, 'Po¿yczka wyp³acona', 'Po¿yczka sp³acona')) ProposalStatus
+		,isnull(x.po_numer, '') LoanNumber
+		,isnull(saldo_aktualne, 0) CurrentBalance
+	from pozyczka_wniosek
+	join pozyczka on po_id = pwn_po_id
+	join scoring.przeliczenie on po_id = scrprz_po_id
+	left join (
+		select po_id, po_numer, sum(iif(ks_kst_id = 1, ksd_kwota_wn, 0)) - sum(iif(ks_kst_id = 2, ksd_kwota_ma, 0)) saldo_aktualne
+		from pozyczka
+		join pozyczka_harmonogram on po_id = ph_po_id
+		join pozyczka_rata on ph_id = por_ph_id
+		join ksiegowanie_dekret on por_id = ksd_por_id
+		join ksiegowanie on ks_id = ksd_ks_id
+		where po_pk_id = @pk_id and ph_id = dbo.f_aktualny_harmonogram(po_id)
+		group by po_id, po_numer
+	) x on x.po_id = pwn_po_id
+	where
+		po_pk_id = @pk_id
 end;
 go

@@ -20,5 +20,10 @@ public static class DataHelper
         {
             entity.HasNoKey();
         });
+
+        modelBuilder.Entity<LoanHistoryDto>(entity =>
+        {
+            entity.HasNoKey();
+        });
     }
 }

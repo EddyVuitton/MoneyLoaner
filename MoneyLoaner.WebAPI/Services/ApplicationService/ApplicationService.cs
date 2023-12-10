@@ -146,5 +146,18 @@ public class ApplicationService : IApplicationService
         return deserialisedResponse;
     }
 
+    public async Task<HttpApiResponseT<List<LoanHistoryDto>?>> GetLoansHistoryAsync(int pk_id)
+    {
+        var response = await _httpClient.GetAsync($"{_LOANAPI}/GetLoansHistoryAsync?pk_id={pk_id}");
+
+        var responseContent = await response.Content.ReadAsStringAsync();
+        var deserialisedResponse = JsonConvert.DeserializeObject<HttpApiResponseT<List<LoanHistoryDto>?>>(responseContent);
+
+        if (deserialisedResponse is null)
+            throw new NullReferenceException(typeof(List<LoanHistoryDto>).Name);
+
+        return deserialisedResponse;
+    }
+
     #endregion Loan
 }

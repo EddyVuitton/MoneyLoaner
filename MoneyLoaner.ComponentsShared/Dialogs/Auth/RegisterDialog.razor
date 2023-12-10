@@ -6,7 +6,8 @@
                 <MudCardContent>
                     <MudTextField @bind-Value="_model.PersonalNumber"
                                   Label="PESEL"
-                                  For="@(() => _model.PersonalNumber)" />
+                                  For="@(() => _model.PersonalNumber)"
+                                  Mask="@(new PatternMask("00000000000"))" />
                     <MudTextField @bind-Value="_model.Email"
                                   Label="Adres email"
                                   For="@(() => _model.Email)" />

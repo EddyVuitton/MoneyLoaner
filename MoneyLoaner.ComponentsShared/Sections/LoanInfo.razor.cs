@@ -94,7 +94,7 @@ public partial class LoanInfo
         DialogService.Show<LoginDialog>(string.Empty, options);
     }
 
-    private void OpenRegisterDialog()
+    private void OpenRegisterDialog(ProposalDto proposal)
     {
         var options = new DialogOptions
         {
@@ -104,7 +104,12 @@ public partial class LoanInfo
             FullWidth = true
         };
 
-        DialogService.Show<RegisterDialog>(string.Empty, options);
+        var parameters = new DialogParameters<ProposalDto>
+        {
+            { "Proposal", proposal }
+        };
+
+        DialogService.Show<RegisterDialog>(string.Empty, parameters, options);
     }
 
     private void ToggleLoading()
@@ -145,17 +150,17 @@ public partial class LoanInfo
                 if (clientId < 0)
                 {
                     OpenLoginDialog();
-                    SnackbarHelper.Show("Zaloguj się, aby móc zobaczyć harmonogram spłat Twojej pożyczki", Severity.Info, false, false);
+                    SnackbarHelper.Show("Zaloguj się, aby zobaczyć decyzję złożonego wniosku", Severity.Info, false, false);
                 }
                 else
                 {
-                    SnackbarHelper.Show("Na stronie Twojego konta pojawił się harmonogram spłat nowej pożyczki", Severity.Info, false, false);
+                    SnackbarHelper.Show("Na stronie Twojego konta pojawiła się informacja o decyzji nowej pożyczki", Severity.Info, false, false);
                 }
             }
             else
             {
-                OpenRegisterDialog();
-                SnackbarHelper.Show("Stwórz teraz swoje konto, aby zobaczyć harmonogram spłat Twojej pożyczki", Severity.Success, false, false);
+                OpenRegisterDialog(proposalDto);
+                SnackbarHelper.Show("Stwórz teraz swoje konto, aby zobaczyć decyzję złożonego wniosku", Severity.Success, false, false);
             }
         }
         catch (Exception ex)

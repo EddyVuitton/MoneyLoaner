@@ -491,7 +491,7 @@ begin
 
 	set @nowy_numer = (isnull(@nowy_numer, 0) + 1000) + 1;
 
-	return '100' + cast(@nowy_numer as nvarchar(max));
+	return '200' + cast(@nowy_numer as nvarchar(max));
 end;
 go
 
@@ -507,7 +507,7 @@ begin
 
 	set @nowy_numer = (isnull(@nowy_numer, 0) + 100000) + 1;
 
-	return '50' + cast(@nowy_numer as nvarchar(max));
+	return '30' + cast(@nowy_numer as nvarchar(max));
 end;
 go
 
@@ -678,11 +678,17 @@ begin
 
 		set @out_id = scope_identity();
 
-		insert into email (em_pk_id, em_nazwa, em_data_dodania, em_data_zakonczenia)
-		values (@out_id, @email, @now, null);
+		if (@email is not null)
+		begin
+			insert into email (em_pk_id, em_nazwa, em_data_dodania, em_data_zakonczenia)
+			values (@out_id, @email, @now, null);
+		end
 
-		insert into telefon (tn_pk_id, tn_nazwa, tn_data_dodania, tn_data_zakonczenia)
-		values (@out_id, @numer_telefonu, @now, null);
+		if (@numer_telefonu is not null)
+		begin
+			insert into telefon (tn_pk_id, tn_nazwa, tn_data_dodania, tn_data_zakonczenia)
+			values (@out_id, @numer_telefonu, @now, null);
+		end
 	end
 	else
 	begin
@@ -833,26 +839,41 @@ end;
 go
 
 create or alter procedure p_uzytkownik_konto_dodaj
+	@imie nvarchar(max),
+	@nazwisko nvarchar(max),
 	@pesel varchar(11),
 	@email nvarchar(max),
 	@haslo nvarchar(max)
 as
 begin
-	declare @pk_id int = (select top 1 pk_id from pozyczka_klient where pk_pesel = @pesel);
-	declare @uk_id int = (
-		select top 1 1
-		from uzytkownik_konto
-		join pozyczka_klient on pk_id = uk_pk_id
-		where pk_id = @pk_id and uk_email = @email
-	);
-
-	if (@uk_id is not null)
+	declare @pk_id int, @uk_id int, @em_id int, @em_pk_id int;
+	
+	select top 1 @pk_id = pk_id, @uk_id = @uk_id
+	from pozyczka_klient
+	left join uzytkownik_konto on pk_id = uk_pk_id
+	where pk_pesel = @pesel
+	
+	if (@pk_id is not null and @uk_id is not null)
 	begin
-		raiserror('Istnieje ju¿ konto z podanym adresem email', 16, 1);
+		raiserror('Masz ju¿ za³o¿one swoje konto', 16, 1);
+		return;
 	end
 
+	select top 1 @em_id = em_id, @em_pk_id = em_pk_id
+	from email
+	where em_nazwa = @email and em_data_zakonczenia is null
+
+	if (@em_id is not null and @em_pk_id != @pk_id)
+	begin
+		raiserror('Podany adres email jest zajêty', 16, 1);
+		return;
+	end
+
+	declare @pk_id_out int;
+	exec p_pozyczka_klient_aktualizuj @imie, @nazwisko, @pesel, @email, null, @pk_id_out out;
+
 	insert into uzytkownik_konto (uk_email, uk_haslo, uk_data_dodania, uk_czy_aktywne, uk_pk_id)
-	values (@email, @haslo, getdate(), 1, @pk_id);
+	values (@email, @haslo, getdate(), 1, @pk_id_out);
 end;
 go
 
@@ -998,8 +1019,8 @@ begin
 		em_nazwa [Email],
 		tn_nazwa [Phone]
 	from pozyczka_klient
-	join email on pk_id = em_pk_id and em_data_zakonczenia is null
-	join telefon on pk_id = tn_pk_id and tn_data_zakonczenia is null
+	left join email on pk_id = em_pk_id and em_data_zakonczenia is null
+	left join telefon on pk_id = tn_pk_id and tn_data_zakonczenia is null
 	left join (
 		select po_pk_id, po_id, po_numer, rb_numer
 		from pozyczka

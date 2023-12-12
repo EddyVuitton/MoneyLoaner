@@ -4,19 +4,34 @@
             <DataAnnotationsValidator />
             <MudCard Elevation="0">
                 <MudCardContent>
+                    <MudTextField @bind-Value="_model.Name"
+                                  Class="mt-3"
+                                  For="@(() => _model.Name)"
+                                  Label="Imię" />
+
+                    <MudTextField @bind-Value="_model.Surname"
+                                  Class="mt-3"
+                                  For="@(() => _model.Surname)"
+                                  Label="Nazwisko" />
+
                     <MudTextField @bind-Value="_model.PersonalNumber"
                                   Label="PESEL"
+                                  Class="mt-3"
                                   For="@(() => _model.PersonalNumber)"
                                   Mask="@(new PatternMask("00000000000"))" />
+
                     <MudTextField @bind-Value="_model.Email"
                                   Label="Adres email"
+                                  Class="mt-3"
                                   For="@(() => _model.Email)" />
+
                     <MudTextField @bind-Value="_model.Password"
                                   Label="Hasło"
                                   HelperText="Wybierz silne hasło"
                                   Class="mt-3"
                                   For="@(() => _model.Password)"
                                   InputType="InputType.Password" />
+
                     <MudTextField @bind-Value="_model.Password2"
                                   Label="Powtórz hasło"
                                   Class="mt-3"

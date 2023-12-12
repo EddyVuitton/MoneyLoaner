@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.JSInterop;
 using MoneyLoaner.ComponentsShared.Helpers.Snackbar;
+using MoneyLoaner.Data.DTOs;
 using MoneyLoaner.Data.Forms;
 using MoneyLoaner.WebAPI.Services.ApplicationService;
 using MudBlazor;
@@ -20,7 +21,22 @@ public partial class RegisterDialog
     [CascadingParameter] private MudDialogInstance MudDialog { get; set; }
 #nullable enable
 
+    [Parameter] public ProposalDto? Proposal { get; set; }
+
     private readonly RegisterAccountForm _model = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+
+        if (Proposal is not null)
+        {
+            _model.Name = Proposal.Name;
+            _model.Surname = Proposal.Surname;
+            _model.Email = Proposal.Email;
+            _model.PersonalNumber = Proposal.PersonalNumber;
+        }
+    }
 
     private async void OnValidSubmit(EditContext context)
     {

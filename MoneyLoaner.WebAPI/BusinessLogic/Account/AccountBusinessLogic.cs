@@ -59,25 +59,18 @@ public class AccountBusinessLogic : IAccountBusinessLogic
         if (registerForm is null || string.IsNullOrEmpty(registerForm.Email) || string.IsNullOrEmpty(registerForm.Password))
             throw new Exception("Niepoprawna próba rejestracji");
 
-        var userAccountInfo = await this.GetUserAccountInfoAsync(email: registerForm.Email);
-
-        if (userAccountInfo is null)
-        {
-            var hT = new Hashtable
+        var hT = new Hashtable
             {
+                { "@imie", registerForm.Name },
+                { "@nazwisko", registerForm.Surname},
                 { "@pesel", registerForm.PersonalNumber },
                 { "@email", registerForm.Email },
                 { "@haslo", AuthHelper.HashPassword(registerForm.Password) }
             };
 
-            await SqlHelper.ExecuteSqlQuerySingleAsync("exec p_uzytkownik_konto_dodaj @pesel, @email, @haslo;", hT);
+        await SqlHelper.ExecuteSqlQuerySingleAsync("exec p_uzytkownik_konto_dodaj @imie, @nazwisko, @pesel, @email, @haslo;", hT);
 
-            return "Konto poprawnie zarejestrowane";
-        }
-        else
-        {
-            throw new Exception("Istnieje już konto z podanym adresem email");
-        }
+        return "Konto poprawnie zarejestrowane";
     }
 
     public async Task<UserAccountDto?> GetUserAccountInfoAsync(string email = "", int pk_id = 0, string pesel = "")

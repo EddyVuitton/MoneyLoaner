@@ -12,12 +12,12 @@
         @foreach (var x in InstallmentDtos.OrderBy(x => x.PaymentDate))
         {
             <tr>
-                <td>@x.Number</td>
+                <td>@(x.Number).</td>
                 <td>@x.PaymentDate.ToString("dd.MM.yyyy")</td>
-                <td>@x.Principal</td>
-                <td>@x.AdmissionFee</td>
-                <td>@x.ContractualInterest</td>
-                <td>@x.Balance</td>
+                <td>@(x.Principal.ToString("N2")) zł</td>
+                <td>@(x.AdmissionFee.ToString("N2")) zł</td>
+                <td>@(x.ContractualInterest.ToString("N2")) zł</td>
+                <td>@(x.Balance.ToString("N2")) zł</td>
             </tr>
         }
     </table>

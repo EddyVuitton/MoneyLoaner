@@ -13,10 +13,10 @@ public class ApplicationForm
     [Required(ErrorMessage = "Pole nie może być puste...")]
     public string? PhoneNumber { get; set; }
 
-    [Required(ErrorMessage = "Pole nie może być puste...")]
+    [Required(ErrorMessage = "Pole nie może być puste..."), StringLength(11, ErrorMessage = "Podaj prawidłowy numer PESEL...", MinimumLength = 11)]
     public string? PersonalNumber { get; set; }
 
-    [Required(ErrorMessage = "Pole nie może być puste..."), StringLength(100, ErrorMessage = "Zbyt długi adres email..."), EmailAddress(ErrorMessage = "Nie poprawny adres email...")]
+    [Required(ErrorMessage = "Pole nie może być puste..."), StringLength(100, ErrorMessage = "Zbyt długi adres email..."), EmailAddress(ErrorMessage = "Niepoprawny adres email...")]
     public string? Email { get; set; }
 
     [Required(ErrorMessage = "Proszę podać kwotę..."), Range(1, int.MaxValue, ErrorMessage = "Kwota powinna wynosić conajmniej 1 zł...")]

@@ -126,7 +126,7 @@ public partial class LoanInfo
     {
         ToggleLoading();
 
-        await Task.Delay(3000);
+        await Task.Delay(1500);
 
         _newProposalDto = new() { LoanDto = _loan, ProposalDto = proposalDto };
 

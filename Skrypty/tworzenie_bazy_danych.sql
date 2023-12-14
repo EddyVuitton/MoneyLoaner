@@ -375,7 +375,6 @@ begin --uzupe³nienie s³owników
 	('Pierwsze sprawdzenie klienta', getdate())
 
 	insert into scoring.pole (scrp_scrm_id, scrp_nazwa, scrp_skrot, scrp_zapytanie, scrp_data_dodania) values
-	(1, 'Klient jest zbyt m³ody', 'KL_WIEK', 'select scoring.wiek_klienta(@pozyczka_id);', getdate()),
 	(1, 'Niewystarczaj¹cy dochód klienta', 'KL_DOCH', 'select scoring.dochod_klienta(@pozyczka_id);', getdate()),
 	(1, 'Klient ma ju¿ otwart¹ po¿yczkê', 'KL_POZ', 'select scoring.otwarte_pozyczki_klienta(@pozyczka_id);', getdate())
 end;
@@ -413,16 +412,6 @@ begin --tworzenie synonimów
 		delete #synonimy where table_name = @table;
 		set @i = @i + 1;
 	end
-end;
-go
-
-create or alter function scoring.wiek_klienta(@pozyczka_id int)
-returns bit
-as
-begin
-	declare @result int = 0;
-
-	return @result;
 end;
 go
 

@@ -461,7 +461,7 @@ begin
 
 	select top 1 @wynik = scrprz_czy_dyskwalifikacja
 	from scoring.przeliczenie
-	where scrprz_po_id = 1
+	where scrprz_po_id = @po_id
 	order by scrprz_czy_dyskwalifikacja desc
 
 	return @wynik;
@@ -964,7 +964,7 @@ begin
 end;
 go
 
-create or alter procedure p_pobierz_harmonogram @ph_id int
+create or alter procedure p_pobierz_harmonogram @po_id int
 as
 begin
 	select
@@ -984,7 +984,7 @@ begin
 	from pozyczka_rata
 	join ksiegowanie_dekret on por_id = ksd_por_id
 	join ksiegowanie on ks_id = ksd_ks_id
-	where por_ph_id = @ph_id
+	where por_ph_id = dbo.f_aktualny_harmonogram(@po_id)
 	group by por_id, por_numer, por_data_wymagalnosci
 	order by PaymentDate
 end;
@@ -994,7 +994,7 @@ create or alter procedure p_konto_informacje_pobierz @pk_id int
 as
 begin
 	declare @aktualna_pozyczka int = dbo.f_aktualna_pozyczka(@pk_id);
-	declare @czy_zdyskwalifikowana_pozyczka bit = (select scoring.f_scoring_wynik(1));
+	declare @czy_zdyskwalifikowana_pozyczka bit = (select scoring.f_scoring_wynik(@aktualna_pozyczka));
 
 	select
 		pk_numer [ClientNumber],

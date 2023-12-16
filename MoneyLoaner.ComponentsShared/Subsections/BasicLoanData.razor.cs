@@ -112,6 +112,7 @@ public partial class BasicLoanData
     private void ConfirmLoan()
     {
         Toggle();
+        CalculateXIRR();
         LoanInfoRef.ToggleProposal();
     }
 

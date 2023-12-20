@@ -49,7 +49,7 @@ public partial class LoanDetails
 
     private void InitFields()
     {
-        _DayOfDatePayment = LoanDto.FirstInstallmentPaymentDate;
+        _DayOfDatePayment = _now;
         _dateRangeMin = new DateTime(_now.Year, _now.Month, 1)
             .AddMonths(1)
             .AddDays(-1)

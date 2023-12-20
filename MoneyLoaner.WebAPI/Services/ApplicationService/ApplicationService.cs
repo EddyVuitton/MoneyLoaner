@@ -159,5 +159,18 @@ public class ApplicationService : IApplicationService
         return deserialisedResponse;
     }
 
+    public async Task<HttpApiResponseT<LoanConfig?>> GetLoanConfigAsync()
+    {
+        var response = await _httpClient.GetAsync($"{_LOANAPI}/GetLoanConfigAsync");
+
+        var responseContent = await response.Content.ReadAsStringAsync();
+        var deserialisedResponse = JsonConvert.DeserializeObject<HttpApiResponseT<LoanConfig?>>(responseContent);
+
+        if (deserialisedResponse is null)
+            throw new NullReferenceException(typeof(LoanConfig).Name);
+
+        return deserialisedResponse;
+    }
+
     #endregion Loan
 }

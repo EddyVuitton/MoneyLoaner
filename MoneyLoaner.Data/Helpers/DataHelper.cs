@@ -25,5 +25,10 @@ public static class DataHelper
         {
             entity.HasNoKey();
         });
+
+        modelBuilder.Entity<LoanConfig>(entity =>
+        {
+            entity.HasNoKey();
+        });
     }
 }

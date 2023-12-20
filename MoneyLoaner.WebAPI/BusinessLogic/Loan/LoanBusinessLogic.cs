@@ -86,6 +86,13 @@ public class LoanBusinessLogic : ILoanBusinessLogic
         return await _context.SqlQueryAsync<LoanHistoryDto>("exec p_konto_historia_pozyczek @pk_id;", hT);
     }
 
+    public async Task<LoanConfig?> GetLoanConfigAsync()
+    {
+        var result = await _context.SqlQueryAsync<LoanConfig>("exec p_aktualna_oferta_config;");
+
+        return result.FirstOrDefault();
+    }
+    
     #endregion PublicMethods
 
     #region PrivateMethods

@@ -6,10 +6,11 @@ public class LoanConfig
     public decimal AmountMin { get; set; }
     public decimal AmountMax { get; set; }
     public decimal AmountStep { get; set; }
-    public decimal Period { get; set; }
-    public decimal PeriodMin { get; set; }
-    public decimal PeriodMax { get; set; }
-    public decimal PeriodStep { get; set; }
+    public int Period { get; set; }
+    public int PeriodMin { get; set; }
+    public int PeriodMax { get; set; }
+    public int PeriodStep { get; set; }
     public decimal Fee { get; set; }
-    public decimal InterestRate { get; set; }
+    public decimal ContractualInterest { get; set; }
+    public decimal PenaltyInterest { get; set; }
 }

@@ -195,6 +195,7 @@ create table ksiegowanie (
 	ks_data_dodania datetime not null,
 	ks_data_operacji datetime not null,
 	ks_kst_id int not null foreign key references ksiegowanie_typ (kst_id),
+	ks_czy_zamkniete int not null,
 	ks_uwagi nvarchar(max) null,
 	aud_data datetime default getdate(),
 	aud_login nvarchar(max) default suser_name()
@@ -284,6 +285,25 @@ create table scoring.wartosc (
 );
 go
 
+create table oprocentowanie (
+	op_id int primary key identity(1, 1),
+	op_nazwa nvarchar(max) not null,
+	aud_data datetime default getdate(),
+	aud_login nvarchar(max) default suser_name()
+);
+go
+
+create table oprocentowanie_wartosc (
+	opw_id int primary key identity(1, 1),
+	opw_op_id int foreign key references oprocentowanie (op_id),
+	opw_wartosc decimal(7, 4) not null,
+	opw_data_dodania datetime not null,
+	opw_data_zakonczenia datetime null,
+	aud_data datetime default getdate(),
+	aud_login nvarchar(max) default suser_name()
+);
+go
+
 create database money_loaner_shdlog;
 go
 
@@ -329,20 +349,21 @@ begin --tworzenie triggerów
 		declare @schema nvarchar(max) = (select schema_name from #triggery where table_name = @table);
 		declare @trigger_name nvarchar(max) = 'tr_' + isnull(@schema + '_', '') + @table + '_upd';
 		declare @column nvarchar(max) = (select column_name from #triggery where table_name = @table);
+		declare @full_table_name nvarchar(max) = isnull(@schema + '.', '') + @table;
 
 		--select @table '@table', @schema '@schema', @trigger_name '@trigger_name', isnull(@schema + '.', '')
 
 		declare @trigger_skrypt nvarchar(max) = 
-'create or alter trigger ' + @trigger_name + ' on ' + + isnull(@schema + '.', '') + @table + ' for update
+'create or alter trigger ' + @trigger_name + ' on ' + @full_table_name + ' for update
 as
 begin
 	if (trigger_nestlevel() < 2)
 	begin
-		update ' + @table + ' set
+		update ' + @full_table_name + ' set
 			aud_data = getdate(),
 			aud_login = suser_name()
-		from ' + @table + '
-		join inserted on inserted.' + @column + ' = ' + @table + '.' + @column + '
+		from ' + @full_table_name + '
+		join inserted on inserted.' + @column + ' = ' + @full_table_name + '.' + @column + '
 	end
 end';		
 
@@ -363,20 +384,31 @@ begin --uzupe³nienie s³owników
 	('kapita³', 0),
 	('prowizja', 0),
 	('odsetki', 0),
-	('umorzenie', 1);
+	('umorzenie', 1),
+	('nadp³ata', 0);
 	
 	insert into ksiegowanie_konto_subkonto (ksksub_ksk_id, ksksub_nazwa) values
-	(2, 'Przelew'),
-	(4, 'Prowizja administracyjna'),
-	(5, 'Odsetki umowne'),
-	(6, 'Zni¿ka/Rabat');
+	(2, 'przelew'),
+	(4, 'prowizja administracyjna'),
+	(5, 'odsetki umowne'),
+	(6, 'zni¿ka/rabat');
 	
 	insert into scoring.model (scrm_nazwa, scrm_data_dodania) values
-	('Pierwsze sprawdzenie klienta', getdate())
+	('Pierwsze sprawdzenie klienta', getdate());
 
 	insert into scoring.pole (scrp_scrm_id, scrp_nazwa, scrp_skrot, scrp_zapytanie, scrp_data_dodania) values
 	(1, 'Niewystarczaj¹cy dochód klienta', 'KL_DOCH', 'select scoring.dochod_klienta(@pozyczka_id);', getdate()),
-	(1, 'Klient ma ju¿ otwart¹ po¿yczkê', 'KL_POZ', 'select scoring.otwarte_pozyczki_klienta(@pozyczka_id);', getdate())
+	(1, 'Klient ma ju¿ otwart¹ po¿yczkê', 'KL_POZ', 'select scoring.otwarte_pozyczki_klienta(@pozyczka_id);', getdate());
+
+	insert into oprocentowanie (op_nazwa) values
+	('odsetki umowne'),
+	('odsetki karne'),
+	('prowizja administracyjna');
+
+	insert into oprocentowanie_wartosc (opw_op_id, opw_wartosc, opw_data_dodania) values
+	(1, 0.15, getdate()),
+	(2, 0.25, getdate()),
+	(3, 0.16, getdate());
 end;
 go
 
@@ -571,6 +603,19 @@ begin
 	order by cast(ph_data_dodania as date) desc, ph_id desc
 
 	return @aktualny_harmonogram;
+end
+go
+
+create or alter function f_oprocentowanie_aktualna_wartosc (@op_id int)
+returns decimal(7, 4)
+begin
+	declare @aktualna_wartosc decimal(7, 4);
+
+	select top 1 @aktualna_wartosc = opw_wartosc
+	from oprocentowanie_wartosc
+	where opw_op_id = @op_id and opw_data_zakonczenia is null
+
+	return @aktualna_wartosc;
 end
 go
 
@@ -948,8 +993,8 @@ begin
 	) as s
 	on 1 = 0
 	when not matched then
-		insert (ks_por_id, ks_data_dodania, ks_data_operacji, ks_kst_id)
-		values (por_id, @now, @now, 1)
+		insert (ks_por_id, ks_data_dodania, ks_data_operacji, ks_kst_id, ks_czy_zamkniete)
+		values (por_id, @now, @now, 1, 1)
 		output inserted.ks_id, s.por_id
 		into @ksiegowania (ks_id, por_id)
 	;
@@ -1134,5 +1179,233 @@ begin
 	) x on x.po_id = pwn_po_id
 	where
 		po_pk_id = @pk_id
+end;
+go
+
+create or alter procedure [dbo].[p_rozksiegowanie_wplat] @po_id int, @data date = null
+as
+begin
+	declare @aktualny_harmonogram int = dbo.f_aktualny_harmonogram(@po_id);
+	declare @rb_id int = (select po_rb_id from pozyczka where po_id = @po_id);
+	declare @data_rozksiegowania date = isnull(@data, getdate());
+
+	drop table if exists #wplaty_do_rozks;
+	select ks_id t_ks_id, cast(ks_data_operacji as date) ks_data_operacji
+	into #wplaty_do_rozks
+	from ksiegowanie_dekret
+	join ksiegowanie on ks_id = ksd_ks_id
+	where
+		ksd_rb_id = @rb_id and
+		ks_czy_zamkniete = 0 and
+		ksd_ksk_id = 2
+
+	insert into #wplaty_do_rozks (t_ks_id, ks_data_operacji)
+	select ks_id t_ks_id, cast(ks_data_operacji as date) ks_data_operacji
+	from ksiegowanie_dekret
+	join ksiegowanie on ks_id = ksd_ks_id
+	where
+		ksd_rb_id = @rb_id and
+		ks_czy_zamkniete = 1 and
+		ksd_ksk_id = 7
+
+	drop table if exists #kroki;
+	select
+		t_ks_id,
+		ks_data_operacji,
+		sum(iif(ksd_ksk_id = 2, ksd_kwota_wn, 0)) wplata,
+		sum(iif(ksd_ksk_id = 7, ksd_kwota_ma, 0)) nadplata,
+		sum(iif(ksd_ksk_id not in (2, 7), ksd_kwota_ma, 0)) zaalokowane,
+		max(iif(ksd_ksk_id = 7, ksd_id, 0)) nadplata_ksd_id,
+		row_number() over (order by ks_data_operacji asc, t_ks_id asc) lp
+	into #kroki
+	from #wplaty_do_rozks
+	join ksiegowanie_dekret on t_ks_id = ksd_ks_id
+	group by t_ks_id, ks_data_operacji
+
+	declare @c int = (select count(1) from #kroki);
+
+	--Pocz¹tek pêtli rozksiêgowuj¹cej wp³aty
+	while (@c > 0)
+	begin
+		declare @lp int = (select top 1 lp from #kroki order by lp asc);
+		declare
+			@wplata_ks_id int,
+			@data_operacji date,
+			@wplata_kwota decimal(18, 2),
+			@nadplata_kwota decimal(18, 2),
+			@nadplata_ksd_id int,
+			@zaalokowane decimal(18, 2),
+			@do_alokacji decimal(18, 2)
+
+		select
+			@wplata_ks_id = t_ks_id,
+			@data_operacji = ks_data_operacji,
+			@wplata_kwota = wplata,
+			@nadplata_kwota = nadplata,
+			@nadplata_ksd_id = nadplata_ksd_id,
+			@zaalokowane = zaalokowane,
+			@do_alokacji = wplata - zaalokowane
+		from #kroki
+		where lp = @lp
+
+		if (@do_alokacji = 0)
+			goto koniec_kroku;
+
+		--Przygotuj potrzebne dane na podstawie rat aktualnego harmonogramu
+		drop table if exists #dane;
+		select
+			por_id, por_numer,
+			data_start, por_data_wymagalnosci, rata_aktualna,
+			saldo_aktualne,
+			ksk_id,
+			ksksub_id,
+			row_number() over (order by por_data_wymagalnosci asc, kolejnosc asc) kolejnosc_do_splaty
+		into #dane
+		from (
+			select
+				por_id,
+				por_numer,
+				data_start, por_data_wymagalnosci,
+				ksd_ksk_id ksk_id ,
+				ksd_ksksub_id ksksub_id,
+				sum(iif(ks_kst_id = 1, ksd_kwota_wn, 0)) saldo,
+				sum(iif(ks_kst_id = 2, ksd_kwota_ma, 0)) splata,
+				sum(iif(ks_kst_id = 1, ksd_kwota_wn, 0)) -
+				sum(iif(ks_kst_id = 2, ksd_kwota_ma, 0)) saldo_aktualne,
+				case ksd_ksk_id
+					when 3 then 1
+					when 4 then 2
+					when 5 then 3
+				end kolejnosc,
+				iif(@data_rozksiegowania between data_start and por_data_wymagalnosci, 1, null) rata_aktualna
+			from (
+				select
+					por_id,
+					por_numer,
+					por_ph_id,
+					cast(isnull(dateadd(day, 1, lag(por_data_wymagalnosci) over (order by por_id)), ph_data_rozpoczecia) as date) data_start,
+					cast(por_data_wymagalnosci as date) por_data_wymagalnosci
+				from pozyczka_rata por
+				join pozyczka_harmonogram on ph_id = por_ph_id
+				where por_ph_id = @aktualny_harmonogram
+			) rata
+			join ksiegowanie_dekret on por_id = ksd_por_id
+			join ksiegowanie on ks_id = ksd_ks_id
+			where
+				por_ph_id = @aktualny_harmonogram
+			group by por_id, por_numer, data_start, por_data_wymagalnosci, ksd_ksk_id, ksd_ksksub_id
+			having 
+				sum(iif(ks_kst_id = 1, ksd_kwota_wn, 0)) -
+				sum(iif(ks_kst_id = 2, ksd_kwota_ma, 0)) > 0
+		) y
+		where por_data_wymagalnosci <= @data_rozksiegowania or rata_aktualna = 1
+
+		--Przygotuj alokacjê do dodania
+		drop table if exists #alokacja;
+		select por_id, por_numer, por_data_wymagalnosci, saldo_aktualne, kolejnosc_do_splaty, alokacja, ksk_id, ksksub_id
+		into #alokacja
+		from (
+			select
+				por_id, por_numer, por_data_wymagalnosci, saldo_aktualne, kolejnosc_do_splaty, ksk_id, ksksub_id,
+				case
+					when @do_alokacji - isnull(poprz.bilans_poprzednicy, 0) > 0 then
+						case
+							when @do_alokacji - isnull(poprz.bilans_poprzednicy, 0) < d.saldo_aktualne
+								then @do_alokacji - isnull(poprz.bilans_poprzednicy, 0)
+							else
+								d.saldo_aktualne
+						end
+					else 0.00
+				end alokacja
+			from #dane d
+			cross apply (
+				select sum(d2.saldo_aktualne) as bilans_poprzednicy
+				from #dane d2
+				where d2.kolejnosc_do_splaty < d.kolejnosc_do_splaty
+			) poprz
+		) x
+		where alokacja > 0
+
+		declare @suma_alokacji decimal(18, 2) = isnull((select sum(alokacja) from #alokacja), 0);
+
+		if (@suma_alokacji > 0)
+		begin
+			delete ksiegowanie_dekret
+			where ksd_ks_id = @wplata_ks_id and ksd_ksk_id = 7
+
+			insert into ksiegowanie_dekret (ksd_por_id, ksd_ks_id, ksd_ksk_id, ksd_ksksub_id, ksd_kwota_wn, ksd_kwota_ma)
+			select por_id, @wplata_ks_id, ksk_id, ksksub_id, 0, alokacja
+			from #alokacja
+
+			if (@do_alokacji != @suma_alokacji)
+				insert into ksiegowanie_dekret (ksd_ks_id, ksd_ksk_id, ksd_kwota_wn, ksd_kwota_ma, ksd_rb_id)
+				values (@wplata_ks_id, 7, 0, @do_alokacji - @suma_alokacji, @rb_id);
+		end
+		else 
+		begin
+			if (@nadplata_ksd_id > 0)
+			begin
+				delete ksiegowanie_dekret
+				where
+					ksd_ks_id = @wplata_ks_id and
+					ksd_ksk_id = 7 and
+					ksd_id != @nadplata_ksd_id
+
+				update ksiegowanie_dekret
+				set ksd_kwota_ma = @nadplata_kwota
+				where
+					ksd_id = @nadplata_ksd_id and
+					ksd_kwota_ma != @nadplata_kwota
+			end
+			else
+				insert into ksiegowanie_dekret (ksd_ks_id, ksd_ksk_id, ksd_kwota_wn, ksd_kwota_ma, ksd_rb_id)
+				values (@wplata_ks_id, 7, 0, @do_alokacji, @rb_id);
+		end
+
+		koniec_kroku:
+		--Zamknij rozksiêgowan¹ wp³atê
+		update ksiegowanie
+		set ks_czy_zamkniete = 1
+		where
+			ks_id = @wplata_ks_id and
+			ks_czy_zamkniete = 0
+
+		delete #kroki where lp = @lp;
+		set @c = (select count(1) from #kroki);
+	end
+end;
+go
+
+create or alter procedure p_aktualna_oferta_config
+as
+begin
+	declare @odsetki_umowne int = 1;
+	declare @odsetki_karne int = 2;
+	declare @prowizja int = 3;
+
+	declare @kapital_domyslny decimal(18, 2) = 5000;
+	declare @kapital_minimalny decimal(18, 2) = 1000;
+	declare @kapital_maksymalny decimal(18, 2) = 25000;
+	declare @kapital_step decimal(18, 2) = 100;
+
+	declare @ilosc_rat_domyslna int = 12;
+	declare @ilosc_rat_minimalna int = 6;
+	declare @ilosc_rat_maksymalna int = 72;
+	declare @ilosc_rat_step int = 3;
+
+	select
+		dbo.f_oprocentowanie_aktualna_wartosc(@odsetki_umowne) ContractualInterest,
+		dbo.f_oprocentowanie_aktualna_wartosc(@odsetki_karne) PenaltyInterest,
+		dbo.f_oprocentowanie_aktualna_wartosc(@prowizja) Fee,
+
+		@kapital_domyslny Amount,
+		@kapital_minimalny AmountMin,
+		@kapital_maksymalny AmountMax,
+		@kapital_step AmountStep,
+
+		@ilosc_rat_domyslna Period,
+		@ilosc_rat_minimalna PeriodMin,
+		@ilosc_rat_maksymalna PeriodMax,
+		@ilosc_rat_step PeriodStep
 end;
 go

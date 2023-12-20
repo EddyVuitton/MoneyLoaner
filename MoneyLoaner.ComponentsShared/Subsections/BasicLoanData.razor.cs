@@ -1,23 +1,22 @@
 ﻿using Microsoft.AspNetCore.Components;
-using Microsoft.JSInterop;
 using MoneyLoaner.ComponentsShared.Sections;
 using MoneyLoaner.Data.DTOs;
 using MoneyLoaner.WebAPI.Helpers;
+using MoneyLoaner.WebAPI.Services.ApplicationService;
 
 namespace MoneyLoaner.ComponentsShared.Subsections;
 
 public partial class BasicLoanData
 {
 #nullable disable
-    [Inject] public IJSRuntime JS { get; set; }
+    [Inject] public IApplicationService ApplicationService { get; set; }
 
-    [Parameter] public LoanDto Loan { get; set; }
-    [Parameter] public LoanConfig LoanConfig { get; set; }
     [Parameter] public LoanInfo LoanInfoRef { get; set; }
 #nullable enable
 
-    //private LoanDto Loan = new();
     private List<InstallmentDto> _installmentListDto = new();
+    private LoanDto Loan = new();
+    private LoanConfig LoanConfig = new();
 
     private string _loanSectionWrapperBorderStyle = string.Empty;
     private const string _ACTIVEBORDERSTYLE = "border: 2px solid #594ae2;";
@@ -27,11 +26,12 @@ public partial class BasicLoanData
     private decimal _xirr;
     private DateTime _lastAPRCalculation;
     private bool _disabled = false;
+    private bool _isInitialized = false;
+
+    private readonly DateTime _initialNow = DateTime.Now;
 
     protected override async Task OnInitializedAsync()
     {
-        await base.OnInitializedAsync();
-
         await LoadDefulatValues();
     }
 
@@ -42,7 +42,7 @@ public partial class BasicLoanData
         var now = DateTime.Now;
         var oneSecondPassed = (now - _lastAPRCalculation).TotalSeconds > 1;
 
-        if (oneSecondPassed)
+        if (oneSecondPassed && _isInitialized)
         {
             CalculateXIRR();
         }
@@ -53,8 +53,38 @@ public partial class BasicLoanData
     private async Task LoadDefulatValues()
     {
         _loanSectionWrapperBorderStyle = _ACTIVEBORDERSTYLE;
+        var resultLoanConfig = await ApplicationService.GetLoanConfigAsync();
+
+        LoanConfig = resultLoanConfig.Data ?? new()
+        {
+            Amount = 5000,
+            AmountMin = 1000,
+            AmountMax = 25000,
+            AmountStep = 100,
+            Period = 12,
+            PeriodMin = 6,
+            PeriodMax = 72,
+            PeriodStep = 3,
+            Fee = 0.16m,
+            ContractualInterest = 0.1575m
+        };
+
+        Loan = new LoanDto
+        {
+            StartDate = _initialNow,
+            FirstInstallmentPaymentDate = _initialNow.AddMonths(1),
+            DayOfDatePayment = _initialNow.Date.Day,
+            Installments = Convert.ToInt32(LoanConfig.Period),
+            Principal = LoanConfig.Amount,
+            Fee = LoanConfig.Amount * LoanConfig.Fee,
+            InterestRate = LoanConfig.ContractualInterest
+        };
+
         CalculateXIRR();
         await CalculateInstallments();
+        LoanInfoRef.UpdateLoan(Loan);
+
+        _isInitialized = true;
     }
 
     private void LoanAmountPlus()
@@ -101,7 +131,7 @@ public partial class BasicLoanData
 
     private async Task LoanPeriodValueChanged(decimal value)
     {
-        LoanConfig.Period = value;
+        LoanConfig.Period = int.Parse(value.ToString());
         Loan!.Installments = Convert.ToInt32(LoanConfig.Period);
         await CalculateInstallments();
         StateHasChanged();
@@ -135,9 +165,6 @@ public partial class BasicLoanData
         _firstInstallmentTotal = _installmentListDto.First().Total;
         Loan.InstallmentDtoList = _installmentListDto;
         LoanInfoRef.UpdateLoan(Loan);
-
-        //var json = JsonSerializer.Serialize(Loan);
-        //await JS.SetInLocalStorage(EncryptHelper.Encrypt("loan"), EncryptHelper.Encrypt(json));
     }
 
     public void Toggle()

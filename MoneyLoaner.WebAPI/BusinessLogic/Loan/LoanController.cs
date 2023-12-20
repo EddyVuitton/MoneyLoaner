@@ -75,4 +75,18 @@ public class LoanController : ControllerBase
             return HttpApiHelper.Error<List<LoanHistoryDto>?>(e);
         }
     }
+
+    [HttpGet("GetLoanConfigAsync")]
+    public async Task<HttpApiResponseT<LoanConfig?>> GetLoanConfigAsync()
+    {
+        try
+        {
+            var result = await _businessLogic.GetLoanConfigAsync();
+            return HttpApiHelper.Ok(result);
+        }
+        catch (Exception e)
+        {
+            return HttpApiHelper.Error<LoanConfig?>(e);
+        }
+    }
 }

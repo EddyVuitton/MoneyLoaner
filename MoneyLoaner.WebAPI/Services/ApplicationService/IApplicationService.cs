@@ -17,4 +17,5 @@ public interface IApplicationService
     Task<HttpApiResponse> UpdatePhoneAsync(int pk_id, string phone);
     Task<HttpApiResponse> UpdatePasswordAsync(UpdatePasswordForm updatePasswordForm);
     Task<HttpApiResponseT<List<LoanHistoryDto>?>> GetLoansHistoryAsync(int pk_id);
+    Task<HttpApiResponseT<LoanConfig?>> GetLoanConfigAsync();
 }

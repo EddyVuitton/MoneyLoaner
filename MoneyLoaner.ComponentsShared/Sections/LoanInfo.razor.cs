@@ -33,49 +33,14 @@ public partial class LoanInfo
 
     private bool _submitProposalLoading = false;
 
-    protected override async Task OnInitializedAsync()
-    {
-        await base.OnInitializedAsync();
-
-        LoadDefualtLoan();
-    }
-
     #region PrivateMethods
-
-    private void LoadDefualtLoan()
-    {
-        _loanConfig = new()
-        {
-            Amount = 5000,
-            AmountMin = 1000,
-            AmountMax = 25000,
-            AmountStep = 100,
-            Period = 12,
-            PeriodMin = 6,
-            PeriodMax = 72,
-            PeriodStep = 3,
-            Fee = 0.16m,
-            InterestRate = 0.1575m
-        };
-
-        _loan = new LoanDto
-        {
-            StartDate = _initialNow,
-            FirstInstallmentPaymentDate = _initialNow.AddMonths(1),
-            DayOfDatePayment = _initialNow.Date.Day,
-            Installments = Convert.ToInt32(_loanConfig.Period),
-            Principal = _loanConfig.Amount,
-            Fee = _loanConfig.Amount * _loanConfig.Fee,
-            InterestRate = _loanConfig.InterestRate
-        };
-    }
 
     private async Task ChangeDatePayment(DateTime? day)
     {
         if (day is not null)
         {
             _loan.DayOfDatePayment = day.Value.Day;
-            await _basicLoanDataRef.CalculateInstallments();
+            _basicLoanDataRef.CalculateInstallments();
 
             StateHasChanged();
         }

@@ -1,7 +1,6 @@
 ﻿using MoneyLoaner.Domain.Auth;
 using MoneyLoaner.Domain.DTOs;
 using MoneyLoaner.Domain.Forms;
-using MoneyLoaner.WebAPI.Data;
 
 namespace MoneyLoaner.WebAPI.BusinessLogic.Account;
 

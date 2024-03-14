@@ -1,9 +1,7 @@
 ﻿using Microsoft.AspNetCore.Components;
-using Microsoft.JSInterop;
 using MoneyLoaner.Domain.DTOs;
 using MoneyLoaner.WebUI.Dialogs;
 using MoneyLoaner.WebUI.Helpers.Snackbar;
-using MoneyLoaner.WebUI.Services.ApplicationService;
 using MudBlazor;
 
 namespace MoneyLoaner.WebUI.Sections;

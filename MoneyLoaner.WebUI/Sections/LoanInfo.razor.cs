@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Components;
-using Microsoft.JSInterop;
 using MoneyLoaner.Domain.DTOs;
 using MoneyLoaner.WebUI.Auth;
 using MoneyLoaner.WebUI.Dialogs.Auth;

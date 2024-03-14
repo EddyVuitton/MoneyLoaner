@@ -3,7 +3,6 @@ using MoneyLoaner.Domain.DTOs;
 using MoneyLoaner.Domain.Forms;
 using MoneyLoaner.WebUI.Helpers.Snackbar;
 using MoneyLoaner.WebUI.Sections;
-using MoneyLoaner.WebUI.Services.ApplicationService;
 using MudBlazor;
 
 namespace MoneyLoaner.WebUI.Subsections;

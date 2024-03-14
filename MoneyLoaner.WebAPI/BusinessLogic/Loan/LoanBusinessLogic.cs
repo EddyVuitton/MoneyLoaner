@@ -1,11 +1,11 @@
 ﻿using MoneyLoaner.Domain.Context;
 using MoneyLoaner.Domain.DTOs;
+using MoneyLoaner.Domain.Helpers;
 using MoneyLoaner.WebAPI.Data;
 using MoneyLoaner.WebAPI.Extensions;
-using MoneyLoaner.Domain.Helpers;
+using MoneyLoaner.WebAPI.Helpers;
 using System.Collections;
 using System.Data;
-using MoneyLoaner.WebAPI.Helpers;
 
 namespace MoneyLoaner.WebAPI.BusinessLogic.Loan;
 
@@ -95,7 +95,7 @@ public class LoanBusinessLogic : ILoanBusinessLogic
 
         return result?.FirstOrDefault();
     }
-    
+
     #endregion PublicMethods
 
     #region PrivateMethods

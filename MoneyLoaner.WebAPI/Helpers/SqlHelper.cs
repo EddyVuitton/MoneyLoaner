@@ -14,7 +14,7 @@ public static class SqlHelper
         if (ConfigurationHelper.Config is null)
             throw new Exception("Configuration is not initialized");
 
-        var connectionString = ConfigurationHelper.Config.GetSection("ConnectionStrings:LogicDatabaseConnection").Value;
+        var connectionString = ConfigurationHelper.Config.GetSection("ConnectionStrings:TempDatabaseConnection").Value;
 
         var dT = new DataTable();
         using var connection = new SqlConnection(connectionString);
@@ -67,7 +67,7 @@ public static class SqlHelper
         if (ConfigurationHelper.Config is null)
             throw new Exception("Configuration is not initialized");
 
-        var connectionString = ConfigurationHelper.Config.GetSection("ConnectionStrings:LogicDatabaseConnection").Value;
+        var connectionString = ConfigurationHelper.Config.GetSection("ConnectionStrings:TempDatabaseConnection").Value;
 
         var dT = new DataTable();
         using (var connection = new SqlConnection(connectionString))

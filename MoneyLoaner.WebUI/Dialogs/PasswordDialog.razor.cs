@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
-using MoneyLoaner.Data.Forms;
+using MoneyLoaner.Domain.Forms;
 using MoneyLoaner.WebUI.Sections;
 using MoneyLoaner.WebUI.Services.ApplicationService;
 using MudBlazor;

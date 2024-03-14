@@ -1,4 +1,4 @@
-﻿namespace MoneyLoaner.Data.DTOs;
+﻿namespace MoneyLoaner.Domain.DTOs;
 
 public class LoanHistoryDto
 {

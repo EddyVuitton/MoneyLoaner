@@ -1,4 +1,4 @@
-﻿namespace MoneyLoaner.Data.Auth;
+﻿namespace MoneyLoaner.Domain.Auth;
 
 public class UserToken
 {

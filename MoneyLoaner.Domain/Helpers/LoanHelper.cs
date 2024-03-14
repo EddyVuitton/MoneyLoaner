@@ -1,7 +1,7 @@
-﻿using MoneyLoaner.Data.DTOs;
+﻿using MoneyLoaner.Domain.DTOs;
 using System.Xml.Serialization;
 
-namespace MoneyLoaner.WebAPI.Helpers;
+namespace MoneyLoaner.Domain.Helpers;
 
 public static class LoanHelper
 {

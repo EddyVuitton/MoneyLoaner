@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using MoneyLoaner.Data.DTOs;
+using MoneyLoaner.Domain.DTOs;
 
-namespace MoneyLoaner.Data.Helpers;
+namespace MoneyLoaner.Domain.Helpers;
 
 public static class DataHelper
 {

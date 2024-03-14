@@ -1,7 +1,7 @@
 ﻿using FluentValidation;
-using MoneyLoaner.Data.DTOs;
+using MoneyLoaner.Domain.DTOs;
 
-namespace MoneyLoaner.Data.FluentValidator;
+namespace MoneyLoaner.Domain.FluentValidator;
 
 public class ProposalModelFluentValidator : AbstractValidator<ProposalDto>
 {

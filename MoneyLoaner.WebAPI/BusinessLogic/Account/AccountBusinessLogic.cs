@@ -1,9 +1,9 @@
 ﻿using Microsoft.IdentityModel.Tokens;
-using MoneyLoaner.Data.Auth;
-using MoneyLoaner.Data.Context;
-using MoneyLoaner.Data.DTOs;
-using MoneyLoaner.Data.Forms;
-using MoneyLoaner.Data.Helpers;
+using MoneyLoaner.Domain.Auth;
+using MoneyLoaner.Domain.Context;
+using MoneyLoaner.Domain.DTOs;
+using MoneyLoaner.Domain.Forms;
+using MoneyLoaner.Domain.Helpers;
 using MoneyLoaner.WebAPI.Data;
 using MoneyLoaner.WebAPI.Extensions;
 using MoneyLoaner.WebAPI.Helpers;

@@ -1,10 +1,11 @@
-﻿using MoneyLoaner.Data.Context;
-using MoneyLoaner.Data.DTOs;
+﻿using MoneyLoaner.Domain.Context;
+using MoneyLoaner.Domain.DTOs;
 using MoneyLoaner.WebAPI.Data;
 using MoneyLoaner.WebAPI.Extensions;
-using MoneyLoaner.WebAPI.Helpers;
+using MoneyLoaner.Domain.Helpers;
 using System.Collections;
 using System.Data;
+using MoneyLoaner.WebAPI.Helpers;
 
 namespace MoneyLoaner.WebAPI.BusinessLogic.Loan;
 

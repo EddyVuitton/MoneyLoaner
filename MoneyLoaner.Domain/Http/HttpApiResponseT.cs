@@ -1,6 +1,6 @@
 ﻿using System.Net;
 
-namespace MoneyLoaner.Data.Http;
+namespace MoneyLoaner.Domain.Http;
 
 public class HttpApiResponseT<T>
 {

@@ -1,7 +1,7 @@
-﻿using MoneyLoaner.Data.Auth;
-using MoneyLoaner.Data.DTOs;
-using MoneyLoaner.Data.Forms;
-using MoneyLoaner.Data.Http;
+﻿using MoneyLoaner.Domain.Auth;
+using MoneyLoaner.Domain.DTOs;
+using MoneyLoaner.Domain.Forms;
+using MoneyLoaner.Domain.Http;
 using Newtonsoft.Json;
 using System.Text;
 

@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using MoneyLoaner.Data.Helpers;
+using MoneyLoaner.Domain.Helpers;
 
-namespace MoneyLoaner.Data.Context;
+namespace MoneyLoaner.Domain.Context;
 
 public partial class DBContext : DbContext
 {

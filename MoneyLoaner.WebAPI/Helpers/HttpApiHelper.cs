@@ -1,4 +1,4 @@
-﻿using MoneyLoaner.Data.Http;
+﻿using MoneyLoaner.Domain.Http;
 using System.Net;
 
 namespace MoneyLoaner.WebAPI.Helpers;

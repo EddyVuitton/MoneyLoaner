@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.JSInterop;
-using MoneyLoaner.Data.DTOs;
-using MoneyLoaner.Data.Forms;
+using MoneyLoaner.Domain.DTOs;
+using MoneyLoaner.Domain.Forms;
 using MoneyLoaner.WebUI.Helpers.Snackbar;
 using MoneyLoaner.WebUI.Services.ApplicationService;
 using MudBlazor;

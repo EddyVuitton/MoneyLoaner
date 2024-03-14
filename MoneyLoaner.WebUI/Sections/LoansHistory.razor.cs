@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
-using MoneyLoaner.Data.DTOs;
+using MoneyLoaner.Domain.DTOs;
 
 namespace MoneyLoaner.WebUI.Sections;
 

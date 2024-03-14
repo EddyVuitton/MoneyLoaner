@@ -1,7 +1,7 @@
-﻿using MoneyLoaner.Data.DTOs;
+﻿using MoneyLoaner.Domain.DTOs;
 using System.Collections;
 
-namespace MoneyLoaner.Data.Helpers;
+namespace MoneyLoaner.Domain.Helpers;
 
 public static class DtoHelper
 {

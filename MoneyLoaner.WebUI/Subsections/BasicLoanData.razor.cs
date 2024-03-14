@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Components;
-using MoneyLoaner.Data.DTOs;
-using MoneyLoaner.WebAPI.Helpers;
+using MoneyLoaner.Domain.DTOs;
+using MoneyLoaner.Domain.Helpers;
 using MoneyLoaner.WebUI.Sections;
 using MoneyLoaner.WebUI.Services.ApplicationService;
 

@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
-using MoneyLoaner.Data.Forms;
+using MoneyLoaner.Domain.Forms;
 using MoneyLoaner.WebUI.Auth;
 using MoneyLoaner.WebUI.Helpers.Snackbar;
 using MoneyLoaner.WebUI.Services.ApplicationService;

@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Components;
-using MoneyLoaner.Data.DTOs;
-using MoneyLoaner.Data.FluentValidator;
+using MoneyLoaner.Domain.DTOs;
+using MoneyLoaner.Domain.FluentValidator;
 using MoneyLoaner.WebUI.Sections;
 using MoneyLoaner.WebUI.Services.ApplicationService;
 using MudBlazor;

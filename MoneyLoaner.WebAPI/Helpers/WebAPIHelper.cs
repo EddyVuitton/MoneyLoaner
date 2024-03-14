@@ -1,4 +1,4 @@
-﻿using MoneyLoaner.Data.Context;
+﻿using MoneyLoaner.Domain.Context;
 using MoneyLoaner.WebAPI.Extensions;
 
 namespace MoneyLoaner.WebAPI.Helpers;

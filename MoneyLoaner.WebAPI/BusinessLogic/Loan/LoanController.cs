@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
-using MoneyLoaner.Data.DTOs;
-using MoneyLoaner.Data.Http;
+using MoneyLoaner.Domain.DTOs;
+using MoneyLoaner.Domain.Http;
 using MoneyLoaner.WebAPI.Helpers;
 
 namespace MoneyLoaner.WebAPI.BusinessLogic.Loan;

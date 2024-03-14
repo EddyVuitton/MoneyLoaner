@@ -1,4 +1,4 @@
-﻿using MoneyLoaner.Data.DTOs;
+﻿using MoneyLoaner.Domain.DTOs;
 
 namespace MoneyLoaner.WebAPI.BusinessLogic.Loan;
 

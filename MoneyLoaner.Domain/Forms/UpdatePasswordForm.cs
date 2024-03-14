@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace MoneyLoaner.Data.Forms;
+namespace MoneyLoaner.Domain.Forms;
 
 public class UpdatePasswordForm
 {

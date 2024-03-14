@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.JSInterop;
-using MoneyLoaner.Data.Auth;
+using MoneyLoaner.Domain.Auth;
 using MoneyLoaner.WebUI.Extensions;
 using System.IdentityModel.Tokens.Jwt;
 using System.Net.Http.Headers;

@@ -1,4 +1,4 @@
-﻿using MoneyLoaner.Data.Auth;
+﻿using MoneyLoaner.Domain.Auth;
 
 namespace MoneyLoaner.WebUI.Auth;
 

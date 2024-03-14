@@ -10,13 +10,8 @@ namespace MoneyLoaner.WebUI.Sections;
 
 public partial class AccountInfo
 {
-#nullable disable
-    [Inject] public IApplicationService ApplicationService { get; set; }
-    [Inject] public ISnackbarHelper SnackbarHelper { get; set; }
-    [Inject] public IJSRuntime JS { get; set; }
-    [Inject] public IDialogService DialogService { get; set; }
-    [Inject] public NavigationManager NavigationManager { get; set; }
-#nullable enable
+    [Inject] public ISnackbarHelper SnackbarHelper { get; set; } = null!;
+    [Inject] public IDialogService DialogService { get; set; } = null!;
 
     [Parameter] public AccountInfoDto? AccountInfoDto { get; set; }
 

@@ -4,17 +4,9 @@ namespace MoneyLoaner.WebUI.Layout;
 
 public partial class MainLayout
 {
-#nullable disable
-    //[Inject] public ILoginService LoginService { get; set; }
-    [Inject] public NavigationManager NavigationManager { get; set; }
-#nullable enable
+    [Inject] public NavigationManager NavigationManager { get; set; } = null!;
 
-    private int _userAccountId = 0;
-
-    protected override async Task OnInitializedAsync()
-    {
-        //await LoginService.LogoutIfExpiredTokenAsync();
-    }
+    private readonly int _userAccountId = 0;
 
     private void NavToIndex()
     {

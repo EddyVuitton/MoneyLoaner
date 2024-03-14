@@ -10,15 +10,13 @@ namespace MoneyLoaner.WebUI.Dialogs.Auth;
 
 public partial class LoginDialog
 {
-#nullable disable
-    [Inject] public IApplicationService ApplicationService { get; set; }
-    [Inject] public ISnackbarHelper SnackbarHelper { get; set; }
-    [Inject] public ILoginService LoginService { get; set; }
-    [Inject] public IDialogService DialogService { get; set; }
-    [Inject] public NavigationManager NavigationManager { get; set; }
+    [Inject] public IApplicationService ApplicationService { get; set; } = null!;
+    [Inject] public ISnackbarHelper SnackbarHelper { get; set; } = null!;
+    [Inject] public ILoginService LoginService { get; set; } = null!;
+    [Inject] public IDialogService DialogService { get; set; } = null!;
+    [Inject] public NavigationManager NavigationManager { get; set; } = null!;
 
-    [CascadingParameter] private MudDialogInstance MudDialog { get; set; }
-#nullable enable
+    [CascadingParameter] private MudDialogInstance MudDialog { get; set; } = null!;
 
     private readonly LoginAccountForm _model = new();
 

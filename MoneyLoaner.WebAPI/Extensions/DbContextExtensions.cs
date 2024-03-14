@@ -4,11 +4,11 @@ namespace MoneyLoaner.WebAPI.Extensions;
 
 public static class DbContextExtensions
 {
-    public static async Task<List<T>> SqlQueryAsync<T>(this DbContext db, string sql, object[] parameters = null, CancellationToken cancellationToken = default) where T : class
+    public static async Task<List<T>?> SqlQueryAsync<T>(this DbContext db, string sql, object[]? parameters = null, CancellationToken cancellationToken = default) where T : class
     {
-        parameters ??= Array.Empty<object>();
+        parameters ??= [];
 
-        if (typeof(T).GetProperties().Any())
+        if (typeof(T).GetProperties().Length != 0)
         {
             return await db.Set<T>().FromSqlRaw(sql, parameters).ToListAsync(cancellationToken);
         }
@@ -19,9 +19,9 @@ public static class DbContextExtensions
         }
     }
 
-    public static async Task SqlQueryAsync(this DbContext db, string sql, object[] parameters = null, CancellationToken cancellationToken = default)
+    public static async Task SqlQueryAsync(this DbContext db, string sql, object[]? parameters = null, CancellationToken cancellationToken = default)
     {
-        parameters ??= Array.Empty<object>();
+        parameters ??= [];
 
         await db.Database.ExecuteSqlRawAsync(sql, parameters, cancellationToken);
     }

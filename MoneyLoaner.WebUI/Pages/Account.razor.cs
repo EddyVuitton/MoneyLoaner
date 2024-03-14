@@ -1,24 +1,15 @@
 ﻿using Microsoft.AspNetCore.Components;
-using Microsoft.JSInterop;
 using MoneyLoaner.Domain.DTOs;
 using MoneyLoaner.WebUI.Auth;
 using MoneyLoaner.WebUI.Helpers;
-using MoneyLoaner.WebUI.Helpers.Snackbar;
 using MoneyLoaner.WebUI.Services.ApplicationService;
-using MudBlazor;
 
 namespace MoneyLoaner.WebUI.Pages;
 
 public partial class Account
 {
-#nullable disable
-    [Inject] public IApplicationService ApplicationService { get; set; }
-    [Inject] public ISnackbarHelper SnackbarHelper { get; set; }
-    [Inject] public IJSRuntime JS { get; set; }
-    [Inject] public ILoginService LoginService { get; set; }
-    [Inject] public IDialogService DialogService { get; set; }
-    [Inject] public NavigationManager NavigationManager { get; set; }
-#nullable enable
+    [Inject] public IApplicationService ApplicationService { get; set; } = null!;
+    [Inject] public ILoginService LoginService { get; set; } = null!;
 
     private List<LoanInstallmentDto>? _installmentDtos;
     private List<LoanHistoryDto>? _loanHistoryDtos;

@@ -12,14 +12,10 @@ namespace MoneyLoaner.WebUI.Sections;
 
 public partial class LoanInfo
 {
-#nullable disable
-    [Inject] public IApplicationService ApplicationService { get; set; }
-    [Inject] public ISnackbarHelper SnackbarHelper { get; set; }
-    [Inject] public IJSRuntime JS { get; set; }
-    [Inject] public ILoginService LoginService { get; set; }
-    [Inject] public IDialogService DialogService { get; set; }
-    [Inject] public NavigationManager NavigationManager { get; set; }
-#nullable enable
+    [Inject] public IApplicationService ApplicationService { get; set; } = null!;
+    [Inject] public ISnackbarHelper SnackbarHelper { get; set; } = null!;
+    [Inject] public ILoginService LoginService { get; set; } = null!;
+    [Inject] public IDialogService DialogService { get; set; } = null!;
 
     private BasicLoanData _basicLoanDataRef = new();
     private ProposalForm _proposalFormRef = new();
@@ -27,9 +23,6 @@ public partial class LoanInfo
     private NewProposalDto? _newProposalDto = new();
     private LoanDto _loan = new();
     private List<InstallmentDto> _installmentListDto = new();
-    private LoanConfig _loanConfig = new();
-
-    private readonly DateTime _initialNow = DateTime.Now;
 
     private bool _submitProposalLoading = false;
 
@@ -37,13 +30,16 @@ public partial class LoanInfo
 
     private async Task ChangeDatePayment(DateTime? day)
     {
-        if (day is not null)
+        await Task.Run(() =>
         {
-            _loan.DayOfDatePayment = day.Value.Day;
-            _basicLoanDataRef.CalculateInstallments();
+            if (day is not null)
+            {
+                _loan.DayOfDatePayment = day.Value.Day;
+                _basicLoanDataRef.CalculateInstallments();
 
-            StateHasChanged();
-        }
+                StateHasChanged();
+            }
+        });
     }
 
     private void OpenLoginDialog()

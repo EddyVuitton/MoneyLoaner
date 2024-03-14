@@ -8,11 +8,9 @@ namespace MoneyLoaner.WebUI.Subsections;
 
 public partial class BasicLoanData
 {
-#nullable disable
-    [Inject] public IApplicationService ApplicationService { get; set; }
+    [Inject] public IApplicationService ApplicationService { get; set; } = null!;
 
-    [Parameter] public LoanInfo LoanInfoRef { get; set; }
-#nullable enable
+    [Parameter] public LoanInfo? LoanInfoRef { get; set; }
 
     private List<InstallmentDto> _installmentListDto = new();
     private LoanDto Loan = new();
@@ -81,8 +79,8 @@ public partial class BasicLoanData
         };
 
         CalculateXIRR();
-        await CalculateInstallments();
-        LoanInfoRef.UpdateLoan(Loan);
+        CalculateInstallments();
+        LoanInfoRef?.UpdateLoan(Loan);
 
         _isInitialized = true;
     }
@@ -119,31 +117,31 @@ public partial class BasicLoanData
         }
     }
 
-    private async Task LoanValueChanged(decimal value)
+    private void LoanValueChanged(decimal value)
     {
         Loan.Principal = value;
         Loan.Fee = value * LoanConfig.Fee;
-        await CalculateInstallments();
+        CalculateInstallments();
         StateHasChanged();
 
-        LoanInfoRef.UpdateLoan(Loan);
+        LoanInfoRef?.UpdateLoan(Loan);
     }
 
-    private async Task LoanPeriodValueChanged(decimal value)
+    private void LoanPeriodValueChanged(decimal value)
     {
         LoanConfig.Period = int.Parse(value.ToString());
         Loan!.Installments = Convert.ToInt32(LoanConfig.Period);
-        await CalculateInstallments();
+        CalculateInstallments();
         StateHasChanged();
 
-        LoanInfoRef.UpdateLoan(Loan);
+        LoanInfoRef?.UpdateLoan(Loan);
     }
 
     private void ConfirmLoan()
     {
         Toggle();
         CalculateXIRR();
-        LoanInfoRef.ToggleProposal();
+        LoanInfoRef?.ToggleProposal();
     }
 
     private void CalculateXIRR()
@@ -159,12 +157,12 @@ public partial class BasicLoanData
 
     #region PublicMethods
 
-    public async Task CalculateInstallments()
+    public void CalculateInstallments()
     {
         _installmentListDto = LoanHelper.GetInstallmentList(Loan!);
         _firstInstallmentTotal = _installmentListDto.First().Total;
         Loan.InstallmentDtoList = _installmentListDto;
-        LoanInfoRef.UpdateLoan(Loan);
+        LoanInfoRef?.UpdateLoan(Loan);
     }
 
     public void Toggle()

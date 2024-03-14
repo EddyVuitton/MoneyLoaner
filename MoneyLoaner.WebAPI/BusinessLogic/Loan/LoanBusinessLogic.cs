@@ -62,7 +62,9 @@ public class LoanBusinessLogic : ILoanBusinessLogic
             SqlParam.CreateParameter("po_id", po_id, SqlDbType.Int)
         };
 
-        return await _context.SqlQueryAsync<LoanInstallmentDto>("exec p_pobierz_harmonogram @po_id;", hT);
+        var result = await _context.SqlQueryAsync<LoanInstallmentDto>("exec p_pobierz_harmonogram @po_id;", hT);
+
+        return result ?? [];
     }
 
     public async Task<AccountInfoDto?> GetAccountInfoAsync(int pk_id)
@@ -74,7 +76,7 @@ public class LoanBusinessLogic : ILoanBusinessLogic
 
         var result = await _context.SqlQueryAsync<AccountInfoDto>("exec p_konto_informacje_pobierz @pk_id;", hT);
 
-        return result.FirstOrDefault();
+        return result?.FirstOrDefault();
     }
 
     public async Task<List<LoanHistoryDto>?> GetLoansHistoryAsync(int pk_id)
@@ -91,7 +93,7 @@ public class LoanBusinessLogic : ILoanBusinessLogic
     {
         var result = await _context.SqlQueryAsync<LoanConfig>("exec p_aktualna_oferta_config;");
 
-        return result.FirstOrDefault();
+        return result?.FirstOrDefault();
     }
     
     #endregion PublicMethods

@@ -9,12 +9,10 @@ namespace MoneyLoaner.WebUI.Dialogs;
 
 public partial class PasswordDialog
 {
-#nullable disable
-    [Inject] public IApplicationService ApplicationService { get; set; }
+    [Inject] public IApplicationService ApplicationService { get; set; } = null!;
 
-    [CascadingParameter] private MudDialogInstance MudDialog { get; set; }
-    [Parameter] public AccountInfo AccountInfoRef { get; set; }
-#nullable enable
+    [CascadingParameter] private MudDialogInstance MudDialog { get; set; } = null!;
+    [Parameter] public AccountInfo? AccountInfoRef { get; set; }
 
     private readonly UpdatePasswordForm _model = new();
 
@@ -24,12 +22,12 @@ public partial class PasswordDialog
 
         if (!result.IsSucces)
         {
-            AccountInfoRef.FailureAfterSubmitSnackbar(result.Message!);
+            AccountInfoRef?.FailureAfterSubmitSnackbar(result.Message!);
             return;
         }
 
-        this.Close();
-        AccountInfoRef.AfterChangePasswordSubmit(result.IsSucces);
+        Close();
+        AccountInfoRef?.AfterChangePasswordSubmit(result.IsSucces);
     }
 
     private void Close()

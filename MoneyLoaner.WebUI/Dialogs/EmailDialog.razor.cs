@@ -9,12 +9,10 @@ namespace MoneyLoaner.WebUI.Dialogs;
 
 public partial class EmailDialog
 {
-#nullable disable
-    [Inject] public IApplicationService ApplicationService { get; set; }
+    [Inject] public IApplicationService ApplicationService { get; set; } = null!;
 
-    [CascadingParameter] private MudDialogInstance MudDialog { get; set; }
-    [Parameter] public AccountInfo AccountInfoRef { get; set; }
-#nullable enable
+    [CascadingParameter] private MudDialogInstance MudDialog { get; set; } = null!;
+    [Parameter] public AccountInfo? AccountInfoRef { get; set; }
 
     private MudForm _form = new();
     private readonly ProposalDto _proposalDto = new();
@@ -30,12 +28,12 @@ public partial class EmailDialog
 
             if (!result.IsSucces)
             {
-                AccountInfoRef.FailureAfterSubmitSnackbar(result.Message!);
+                AccountInfoRef?.FailureAfterSubmitSnackbar(result.Message!);
                 return;
             }
 
-            this.Close();
-            AccountInfoRef.AfterChangeEmailSubmit(result.IsSucces, _proposalDto.Email!);
+            Close();
+            AccountInfoRef?.AfterChangeEmailSubmit(result.IsSucces, _proposalDto.Email!);
         }
     }
 

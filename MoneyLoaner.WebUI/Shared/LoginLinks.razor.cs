@@ -7,11 +7,9 @@ namespace MoneyLoaner.WebUI.Shared;
 
 public partial class LoginLinks
 {
-#nullable disable
-    [Inject] public ILoginService LoginService { get; set; }
-    [Inject] public IDialogService DialogService { get; set; }
-    [Inject] public NavigationManager NavigationManager { get; set; }
-#nullable enable
+    [Inject] public ILoginService LoginService { get; set; } = null!;
+    [Inject] public IDialogService DialogService { get; set; } = null!;
+    [Inject] public NavigationManager NavigationManager { get; set; } = null!;
 
     private async Task LogOut()
     {

@@ -10,14 +10,11 @@ namespace MoneyLoaner.WebUI.Subsections;
 
 public partial class ProposalForm
 {
-#nullable disable
-    [Inject] public IApplicationService ApplicationService { get; set; }
-    [Inject] public ISnackbarHelper SnackbarHelper { get; set; }
+    [Inject] public ISnackbarHelper SnackbarHelper { get; set; } = null!;
 
-    [Parameter] public LoanInfo LoanInfoRef { get; set; }
+    [Parameter] public LoanInfo? LoanInfoRef { get; set; }
 
-    private ApplicationForm _applicationForm = new();
-#nullable enable
+    private readonly ApplicationForm _applicationForm = new();
 
     private string _proposalSectionWrapperBorderStyle = string.Empty;
     private const string _ACTIVEBORDERSTYLE = "border: 2px solid #594ae2;";
@@ -48,7 +45,8 @@ public partial class ProposalForm
         };
 
         SnackbarHelper.Show("Wniosek został wysłany", Severity.Info, true, false);
-        await LoanInfoRef.SubmitNewProposal(proposalDto);
+        if (LoanInfoRef is not null)
+            await LoanInfoRef.SubmitNewProposal(proposalDto);
     }
 
     private void OnInvalidSubmit()
@@ -58,8 +56,8 @@ public partial class ProposalForm
 
     private void CorrectLoan()
     {
-        this.Toggle();
-        LoanInfoRef.ToggleLoan();
+        Toggle();
+        LoanInfoRef?.ToggleLoan();
     }
 
     #endregion PrivateMethods

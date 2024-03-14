@@ -13,7 +13,8 @@ public static class WebAPIHelper
         builder.Services.AddSwaggerGen();
 
         builder.Services.AddBusinessLogic();
-        builder.Services.AddSqlServer<DBContext>(builder.Configuration.GetConnectionString("LogicDatabaseConnection"));
+        //builder.Services.AddSqlServer<DBContext>(builder.Configuration.GetConnectionString("LogicDatabaseConnection"));
+        builder.Services.AddSqlServer<DBContext>(builder.Configuration.GetConnectionString("TempDatabaseConnection"));
         ConfigurationHelper.Initialize(builder.Configuration);
     }
 }

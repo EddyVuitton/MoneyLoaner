@@ -1,47 +1,3 @@
-use master;
-go
-
-begin
-	--https://stackoverflow.com/a/7469167
-	declare @sql_drop_all_connections varchar(max);
-
-	select @sql_drop_all_connections = coalesce(@sql_drop_all_connections,'') + 'kill ' + convert(varchar, spid) + ';'
-	from master..sysprocesses
-	where dbid in (
-		db_id('money_loaner_data'),
-		db_id('money_loaner_logic'),
-		db_id('money_loaner_shdlog')
-	) and spid <> @@spid
-
-	exec (@sql_drop_all_connections);
-
-	declare @exec nvarchar(max);
-	if db_id('money_loaner_data') is not null
-	begin
-		set @exec = 'drop database money_loaner_data;';
-		exec (@exec);
-	end
-
-	if db_id('money_loaner_logic') is not null
-	begin
-		set @exec = 'drop database money_loaner_logic;';
-		exec (@exec);
-	end
-
-	if db_id('money_loaner_shdlog') is not null
-	begin
-		set @exec = 'drop database money_loaner_shdlog;';
-		exec (@exec);
-	end
-end;
-go
-
-create database money_loaner_data;
-go
-
-use money_loaner_data;
-go
-
 create schema scoring;
 go
 
@@ -304,33 +260,6 @@ create table oprocentowanie_wartosc (
 );
 go
 
-create database money_loaner_shdlog;
-go
-
---begin --tworzenie shadow loga
---	drop table if exists #tabele;
---	select  t.name table_name
---	into #tabele
---	from sys.tables t
-
---	declare @c int = (select count(1) from #tabele);
---	declare @i int = 0;
-
---	while (@i < @c)
---	begin
---		declare @table nvarchar(max) = (select top 1 table_name from #tabele);
---		declare @create_table_skrypt nvarchar(max) = 'select top 0 * into money_loaner_shdlog..' + @table + ' from ' + @table + '; alter table money_loaner_shdlog..' + @table + ' add aud_oper char;';
-
---		exec (@create_table_skrypt);
-		
---		delete #tabele where table_name = @table;
---		set @i = @i + 1;
---	end
-
---	-- ... to do ...
---end;
---go
-
 begin --tworzenie triggerów
 	drop table if exists #triggery;
 	select c.object_id, c.name column_name, t.name table_name, iif(s.name = 'dbo', null, s.name) schema_name
@@ -409,41 +338,6 @@ begin --uzupe³nienie s³owników
 	(1, 0.15, getdate()),
 	(2, 0.25, getdate()),
 	(3, 0.16, getdate());
-end;
-go
-
-create database money_loaner_logic;
-go
-
-use money_loaner_logic;
-go
-
-create schema scoring;
-go
-
-begin --tworzenie synonimów
-	drop table if exists #synonimy;
-	select t.name table_name, iif(s.name = 'dbo', null, s.name) schema_name
-	into #synonimy
-	from money_loaner_data.sys.tables t
-	join money_loaner_data.sys.schemas s on s.schema_id = t.schema_id
-
-	declare @c int = (select count(1) from #synonimy);
-	declare @i int = 0;
-
-	while (@i < @c)
-	begin
-		declare @table nvarchar(max), @schema nvarchar(max);
-		select top 1 @table = table_name, @schema = schema_name
-		from #synonimy
-
-		declare @synonim_skrypt nvarchar(max) = 'create synonym ' + isnull(@schema + '.', '') + @table + ' for money_loaner_data.' + isnull(@schema, 'dbo') + '.' + @table + ';';
-	
-		exec (@synonim_skrypt);
-	
-		delete #synonimy where table_name = @table;
-		set @i = @i + 1;
-	end
 end;
 go
 

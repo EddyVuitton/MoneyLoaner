@@ -1,6 +1,7 @@
 <p>Aplikacja jest stworzona w architekturze .NET przy użyciu technologii Blazor, Rest API do obsługi żądań wysyłanych przez front oraz SQL Servera do przechowywania i przetwarzania danych.
 Frontend został stworzony z wykorzystaniem biblioteki MudBlazor,
 która udostępnia prosty i przejrzysty layout oraz opcje okienek dialogowych czy snackbary.</p>
+<p>Baza danych jest tworzona automatycznie na serwerze lokalnym (localdb)\\MSSQLLocalDB, tylko i wyłącznie na środowisku deweloperskim, poprzez uruchomienie skryptu tworzenie_bazy_danych.sql znajdującego się w MoneyLoaner.Domain.Context</p>
 <p>Front wykorzystuje funkcje liczące RRSO, stałą kwotę raty czy cały harmonogram spłat rat uwzględniając domyślne oprocentowanie prowizji oraz odsetek. Po potwierdzeniu pożyczki zostaje zamknięte okienko z suwakami,
 a okienko z formularzem zostaje aktywowane.</p>
 

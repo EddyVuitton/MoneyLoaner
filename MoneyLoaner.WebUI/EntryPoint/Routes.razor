@@ -1,0 +1,15 @@
+﻿<Router AppAssembly="_appAssembly" AdditionalAssemblies="_additionalAssemblies">
+    <Found Context="routeData">
+        <RouteView RouteData="routeData" DefaultLayout="_defualtLayout" />
+        <FocusOnNavigate RouteData="routeData" Selector="h1" />
+    </Found>
+</Router>
+
+@code {
+    private readonly Type _defualtLayout = typeof(MainLayout);
+    private readonly Assembly _appAssembly = typeof(App).Assembly;
+    private readonly List<Assembly> _additionalAssemblies = new()
+    {
+        typeof(MainLayout).Assembly,
+    };
+}

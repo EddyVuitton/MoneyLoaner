@@ -1,8 +1,8 @@
-﻿using DebtWeb.WebAPI.Data;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
+using MoneyLoaner.Data.Auth;
 using MoneyLoaner.Data.DTOs;
 using MoneyLoaner.Data.Forms;
-using MoneyLoaner.WebAPI.Data;
+using MoneyLoaner.Data.Http;
 using MoneyLoaner.WebAPI.Helpers;
 
 namespace MoneyLoaner.WebAPI.BusinessLogic.Account;

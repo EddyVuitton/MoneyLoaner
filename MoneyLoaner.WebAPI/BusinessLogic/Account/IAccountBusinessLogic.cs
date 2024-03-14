@@ -1,4 +1,5 @@
-﻿using MoneyLoaner.Data.DTOs;
+﻿using MoneyLoaner.Data.Auth;
+using MoneyLoaner.Data.DTOs;
 using MoneyLoaner.Data.Forms;
 using MoneyLoaner.WebAPI.Data;
 

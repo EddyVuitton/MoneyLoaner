@@ -1,4 +1,5 @@
 ﻿using Microsoft.IdentityModel.Tokens;
+using MoneyLoaner.Data.Auth;
 using MoneyLoaner.Data.Context;
 using MoneyLoaner.Data.DTOs;
 using MoneyLoaner.Data.Forms;

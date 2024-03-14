@@ -1,4 +1,5 @@
 ﻿using Microsoft.IdentityModel.Tokens;
+using MoneyLoaner.Data.Auth;
 using MoneyLoaner.WebAPI.Data;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;

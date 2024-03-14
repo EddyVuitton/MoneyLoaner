@@ -1,4 +1,4 @@
-﻿using DebtWeb.WebAPI.Data;
+﻿using MoneyLoaner.Data.Http;
 using System.Net;
 
 namespace MoneyLoaner.WebAPI.Helpers;

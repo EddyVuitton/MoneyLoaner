@@ -5,9 +5,9 @@ namespace MoneyLoaner.WebAPI.Helpers;
 
 public class HttpApiHelper
 {
-    public static HttpApiResponseT<T> Error<T>(Exception e)
+    public static HttpResultT<T> Error<T>(Exception e)
     {
-        var httpResponse = new HttpApiResponseT<T>()
+        var httpResponse = new HttpResultT<T>()
         {
             Data = default,
             StatusCode = HttpStatusCode.InternalServerError,
@@ -18,9 +18,9 @@ public class HttpApiHelper
         return httpResponse;
     }
 
-    public static HttpApiResponseT<T> Ok<T>(T data, string message = "")
+    public static HttpResultT<T> Ok<T>(T data, string message = "")
     {
-        var httpResponse = new HttpApiResponseT<T>()
+        var httpResponse = new HttpResultT<T>()
         {
             Data = data,
             StatusCode = HttpStatusCode.OK,
@@ -31,9 +31,9 @@ public class HttpApiHelper
         return httpResponse;
     }
 
-    public static HttpApiResponse Error(Exception ex)
+    public static HttpResult Error(Exception ex)
     {
-        var httpResponse = new HttpApiResponse()
+        var httpResponse = new HttpResult()
         {
             StatusCode = HttpStatusCode.InternalServerError,
             Message = ex.Message,
@@ -43,9 +43,9 @@ public class HttpApiHelper
         return httpResponse;
     }
 
-    public static HttpApiResponse Ok(string message = "")
+    public static HttpResult Ok(string message = "")
     {
-        var httpResponse = new HttpApiResponse()
+        var httpResponse = new HttpResult()
         {
             StatusCode = HttpStatusCode.OK,
             Message = string.IsNullOrEmpty(message) ? "Success" : message,

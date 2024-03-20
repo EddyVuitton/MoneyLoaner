@@ -21,7 +21,7 @@ public class LoanController : ControllerBase
     }
 
     [HttpPost("SubmitNewProposalAsync")]
-    public async Task<HttpApiResponse> SubmitNewProposalAsync(NewProposalDto newProposalDto)
+    public async Task<HttpResult> SubmitNewProposalAsync(NewProposalDto newProposalDto)
     {
         try
         {
@@ -35,7 +35,7 @@ public class LoanController : ControllerBase
     }
 
     [HttpGet("GetScheduleAsync")]
-    public async Task<HttpApiResponseT<List<LoanInstallmentDto>>> GetScheduleAsync(int po_id)
+    public async Task<HttpResultT<List<LoanInstallmentDto>>> GetScheduleAsync(int po_id)
     {
         try
         {
@@ -49,7 +49,7 @@ public class LoanController : ControllerBase
     }
 
     [HttpGet("GetAccountInfoAsync")]
-    public async Task<HttpApiResponseT<AccountInfoDto?>> GetAccountInfoAsync(int pk_id)
+    public async Task<HttpResultT<AccountInfoDto?>> GetAccountInfoAsync(int pk_id)
     {
         try
         {
@@ -63,7 +63,7 @@ public class LoanController : ControllerBase
     }
 
     [HttpGet("GetLoansHistoryAsync")]
-    public async Task<HttpApiResponseT<List<LoanHistoryDto>?>> GetLoansHistoryAsync(int pk_id)
+    public async Task<HttpResultT<List<LoanHistoryDto>?>> GetLoansHistoryAsync(int pk_id)
     {
         try
         {
@@ -77,7 +77,7 @@ public class LoanController : ControllerBase
     }
 
     [HttpGet("GetLoanConfigAsync")]
-    public async Task<HttpApiResponseT<LoanConfig?>> GetLoanConfigAsync()
+    public async Task<HttpResultT<LoanConfig?>> GetLoanConfigAsync()
     {
         try
         {

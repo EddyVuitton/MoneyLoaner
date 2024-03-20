@@ -23,7 +23,7 @@ public class AccountController : ControllerBase
     }
 
     [HttpPost("Login")]
-    public async Task<HttpApiResponseT<UserToken>> Login(LoginAccountForm loginForm)
+    public async Task<HttpResultT<UserToken>> Login(LoginAccountForm loginForm)
     {
         try
         {
@@ -37,7 +37,7 @@ public class AccountController : ControllerBase
     }
 
     [HttpPost("Register")]
-    public async Task<HttpApiResponse> Register(RegisterAccountForm registerForm)
+    public async Task<HttpResult> Register(RegisterAccountForm registerForm)
     {
         try
         {
@@ -51,7 +51,7 @@ public class AccountController : ControllerBase
     }
 
     [HttpGet("GetUserAccount")]
-    public async Task<HttpApiResponseT<UserAccountDto>> GetUserAccount(string email)
+    public async Task<HttpResultT<UserAccountDto>> GetUserAccount(string email)
     {
         try
         {
@@ -71,7 +71,7 @@ public class AccountController : ControllerBase
     }
 
     [HttpPost("UpdateEmailAsync")]
-    public async Task<HttpApiResponse> UpdateEmailAsync(int pk_id, string email)
+    public async Task<HttpResult> UpdateEmailAsync(int pk_id, string email)
     {
         try
         {
@@ -85,7 +85,7 @@ public class AccountController : ControllerBase
     }
 
     [HttpPost("UpdatePhoneAsync")]
-    public async Task<HttpApiResponse> UpdatePhoneAsync(int pk_id, string phone)
+    public async Task<HttpResult> UpdatePhoneAsync(int pk_id, string phone)
     {
         try
         {
@@ -99,7 +99,7 @@ public class AccountController : ControllerBase
     }
 
     [HttpPost("UpdatePasswordAsync")]
-    public async Task<HttpApiResponse> UpdatePasswordAsync(UpdatePasswordForm updatePasswordForm)
+    public async Task<HttpResult> UpdatePasswordAsync(UpdatePasswordForm updatePasswordForm)
     {
         try
         {

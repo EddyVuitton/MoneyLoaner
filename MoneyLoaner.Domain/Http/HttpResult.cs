@@ -2,7 +2,7 @@
 
 namespace MoneyLoaner.Domain.Http;
 
-public class HttpApiResponse
+public class HttpResult
 {
     public HttpStatusCode StatusCode { get; set; }
     public string? Message { get; set; }

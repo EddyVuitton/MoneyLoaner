@@ -6,6 +6,11 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.AddServices();
 
+builder.Services.AddRazorComponents(options =>
+{
+    options.DetailedErrors = true;
+});
+
 if (builder.Environment.IsProduction())
 {
     //Na potrzeby Dockera

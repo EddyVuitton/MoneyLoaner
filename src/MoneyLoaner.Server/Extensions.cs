@@ -13,15 +13,15 @@ public static class Extensions
         builder.Services.AddRazorComponents()
             .AddInteractiveServerComponents();
         builder.Services.AddMudServices();
-        builder.Services.AddServerServices();
+        builder.Services.AddServerServices(builder.Configuration);
         builder.Services.AddAuthServices();
     }
 
-    public static IServiceCollection AddServerServices(this IServiceCollection services)
+    public static IServiceCollection AddServerServices(this IServiceCollection services, ConfigurationManager configuration)
     {
-        var provider = services.BuildServiceProvider();
+        var apiHost = configuration["Api:Host"] ?? string.Empty;
 
-        services.AddScoped(sp => new HttpClient { BaseAddress = new Uri("https://localhost:44304/") });
+        services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(apiHost) });
         services.AddScoped<IApplicationService, ApplicationService>();
         services.AddScoped<ISnackbarHelper, SnackbarHelper>();
 

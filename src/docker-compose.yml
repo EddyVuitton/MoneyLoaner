@@ -1,0 +1,41 @@
+name: MoneyLoaner
+
+services:
+  localhost.sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: moneyloaner_sqlserver
+    environment:
+      SA_PASSWORD: "2LB%sL!fq%XNQ6&#cGG"
+      ACCEPT_EULA: "Y"
+    ports:
+      - "1433:1433"
+    networks:
+      - moneyloaner-net
+
+  localhost.api:
+    build:
+      context: .
+      dockerfile: MoneyLoaner.Api/Dockerfile
+    container_name: moneyloaner_api
+    ports:
+      - "8080:80"
+    depends_on:
+      - localhost.sqlserver
+    networks:
+      - moneyloaner-net
+      
+  localhost.server:
+    build:
+      context: .
+      dockerfile: MoneyLoaner.Server/Dockerfile
+    container_name: moneyloaner_server
+    ports:
+      - "8081:80"
+    depends_on:
+      - localhost.api 
+    networks:
+      - moneyloaner-net
+
+networks:
+  moneyloaner-net:
+    driver: bridge

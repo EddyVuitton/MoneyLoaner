@@ -1,0 +1,43 @@
+# Ignoruj pliki i foldery systemowe
+*.log
+*.tmp
+*.swp
+*.suo
+*.user
+*.DS_Store
+Thumbs.db
+
+# Ignoruj katalogi buildów
+bin/
+obj/
+out/
+
+# Ignoruj konfiguracje środowiskowe
+.vscode/
+.idea/
+*.code-workspace
+
+# Ignoruj pliki tymczasowe edytorów
+*.bak
+*.orig
+
+# Ignoruj pliki i katalogi testowe
+TestResults/
+coverage/
+*.testresults
+*.trx
+
+# Ignoruj lokalne ustawienia dotnet/tools
+.nuget/
+*.nupkg
+*.snupkg
+
+# Ignoruj paczki zależności
+packages/
+node_modules/
+
+# Ignoruj pliki z cache Dockera
+docker-compose.override.yml
+.dockerignore
+.env.local
+.env.*

@@ -648,7 +648,7 @@ begin
 	declare @now datetime = getdate();
 	declare @aktualny_numer_konta_id int;
 	declare @aktualny_numer_konta varchar(26);
-	declare @nowy_rachunek_id int;
+	declare @nowy_rachunek_id table (id int);
 	
 	set @aktualny_numer_konta = replace(@aktualny_numer_konta, ' ', '');
 	set @numer_konta = replace(@numer_konta, ' ', '');
@@ -662,10 +662,12 @@ begin
 
 	if (@aktualny_numer_konta_id is null)
 	begin
-		exec p_rachunek_bankowy_dodaj @numer_konta, @nowy_rachunek_id out;
+		insert into @nowy_rachunek_id
+		exec p_rachunek_bankowy_dodaj @numer_konta;
 
 		insert into klient_rachunek_bankowy(krb_rb_id, krb_pk_id, krb_data_dodania)
-		values (@nowy_rachunek_id, @pk_id, @now);
+		select id, @pk_id, @now
+		from @nowy_rachunek_id
 
 		return;
 	end
@@ -676,10 +678,12 @@ begin
 		set krb_data_zakonczenia = @now
 		where krb_pk_id = @pk_id and krb_data_zakonczenia is null
 
-		exec p_rachunek_bankowy_dodaj @numer_konta, @nowy_rachunek_id out;
+		insert into @nowy_rachunek_id
+		exec p_rachunek_bankowy_dodaj @numer_konta;
 		
 		insert into klient_rachunek_bankowy(krb_rb_id, krb_pk_id, krb_data_dodania)
-		values (@nowy_rachunek_id, @pk_id, @now);
+		select id, @pk_id, @now
+		from @nowy_rachunek_id
 	end
 end;
 go
@@ -796,11 +800,14 @@ begin
 		return;
 	end
 
-	declare @pk_id_out int;
-	exec p_pozyczka_klient_aktualizuj @imie, @nazwisko, @pesel, @email, null, @pk_id_out out;
+	declare @pk_id_out table (id int);
+
+	insert into @pk_id_out
+	exec p_pozyczka_klient_aktualizuj @imie, @nazwisko, @pesel, @email, null;
 
 	insert into uzytkownik_konto (uk_email, uk_haslo, uk_data_dodania, uk_czy_aktywne, uk_pk_id)
-	values (@email, @haslo, getdate(), 1, @pk_id_out);
+	select @email, @haslo, getdate(), 1, id
+	from @pk_id_out
 end;
 go
 

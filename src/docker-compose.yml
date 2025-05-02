@@ -23,18 +23,22 @@ services:
       - localhost.sqlserver
     networks:
       - moneyloaner-net
+    environment:
+      - RanInDocker=true
       
-  localhost.server:
+  localhost.appserver:
     build:
       context: .
-      dockerfile: MoneyLoaner.Server/Dockerfile
-    container_name: moneyloaner_server
+      dockerfile: MoneyLoaner.AppServer/Dockerfile
+    container_name: moneyloaner_appserver
     ports:
       - "8081:80"
     depends_on:
-      - localhost.api 
+      - localhost.api
     networks:
       - moneyloaner-net
+    environment:
+      - RanInDocker=true
 
 networks:
   moneyloaner-net:

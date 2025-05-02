@@ -2,8 +2,6 @@
 using MoneyLoaner.Domain.Auth;
 using MoneyLoaner.Domain.DTOs;
 using MoneyLoaner.Domain.Forms;
-using MoneyLoaner.Domain.Http;
-using MoneyLoaner.Api.Helpers;
 
 namespace MoneyLoaner.Api.BusinessLogic.Account;
 
@@ -13,102 +11,100 @@ public class AccountController : ControllerBase
 {
     private readonly ILogger<AccountController> _logger;
     private readonly IAccountBusinessLogic _businessLogic;
-    private readonly IConfiguration _configuration;
 
-    public AccountController(ILogger<AccountController> logger, IAccountBusinessLogic businessLogic, IConfiguration configuration)
+    public AccountController(ILogger<AccountController> logger, IAccountBusinessLogic businessLogic)
     {
         _logger = logger;
         _businessLogic = businessLogic;
-        _configuration = configuration;
     }
 
     [HttpPost("Login")]
-    public async Task<HttpResultT<UserToken>> Login(LoginAccountForm loginForm)
+    public async Task<ActionResult<UserToken>> Login(LoginAccountForm loginForm)
     {
         try
         {
             var result = await _businessLogic.LoginAsync(loginForm);
-            return HttpApiHelper.Ok(result);
+
+            return Ok(result);
         }
-        catch (Exception e)
+        catch (Exception ex)
         {
-            return HttpApiHelper.Error<UserToken>(e);
+            return BadRequest(ex);
         }
     }
 
     [HttpPost("Register")]
-    public async Task<HttpResult> Register(RegisterAccountForm registerForm)
+    public async Task<ActionResult<string>> Register(RegisterAccountForm registerForm)
     {
         try
         {
             var result = await _businessLogic.RegisterAsync(registerForm);
-            return HttpApiHelper.Ok(result);
+
+            return Ok(result);
         }
-        catch (Exception e)
+        catch (Exception ex)
         {
-            return HttpApiHelper.Error(e);
+            return BadRequest(ex);
         }
     }
 
     [HttpGet("GetUserAccount")]
-    public async Task<HttpResultT<UserAccountDto>> GetUserAccount(string email)
+    public async Task<ActionResult<UserAccountDto>> GetUserAccount(string email)
     {
         try
         {
             var result = await _businessLogic.GetUserAccountInfoAsync(email);
 
-            if (result is null)
-            {
-                throw new Exception("Brak użytkownika w bazie");
-            }
-
-            return HttpApiHelper.Ok(result);
+            return Ok(result);
         }
-        catch (Exception e)
+        catch (Exception ex)
         {
-            return HttpApiHelper.Error<UserAccountDto>(e);
+            return BadRequest(ex);
         }
     }
 
     [HttpPost("UpdateEmailAsync")]
-    public async Task<HttpResult> UpdateEmailAsync(int pk_id, string email)
+    public async Task<ActionResult> UpdateEmailAsync(int pk_id, string email)
     {
         try
         {
             await _businessLogic.UpdateEmailAsync(pk_id, email);
-            return HttpApiHelper.Ok();
+
+            return Ok();
         }
-        catch (Exception e)
+        catch (Exception ex)
         {
-            return HttpApiHelper.Error(e);
+            return BadRequest(ex);
         }
     }
 
     [HttpPost("UpdatePhoneAsync")]
-    public async Task<HttpResult> UpdatePhoneAsync(int pk_id, string phone)
+    public async Task<ActionResult> UpdatePhoneAsync(int pk_id, string phone)
     {
         try
         {
             await _businessLogic.UpdatePhoneAsync(pk_id, phone);
-            return HttpApiHelper.Ok();
+
+            return Ok();
         }
-        catch (Exception e)
+        catch (Exception ex)
         {
-            return HttpApiHelper.Error(e);
+            return BadRequest(ex);
         }
     }
 
     [HttpPost("UpdatePasswordAsync")]
-    public async Task<HttpResult> UpdatePasswordAsync(UpdatePasswordForm updatePasswordForm)
+    public async Task<ActionResult> UpdatePasswordAsync(UpdatePasswordForm updatePasswordForm)
     {
         try
         {
             await _businessLogic.UpdatePasswordAsync(updatePasswordForm);
-            return HttpApiHelper.Ok();
+
+            return Ok();
         }
-        catch (Exception e)
+        catch (Exception ex)
         {
-            return HttpApiHelper.Error(e);
+            return BadRequest(ex);
         }
     }
 }

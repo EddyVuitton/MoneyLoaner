@@ -33,20 +33,24 @@ public partial class Account
 
     private async Task LoadData(int clientId)
     {
-        var accountInfoResult = await ApplicationService.GetAccountInfoAsync(clientId);
-
-        if (accountInfoResult is not null && accountInfoResult.Data is not null)
+        try
         {
-            accountInfoResult.Data.Phone = ComponentsHelper.FormatPhoneNumber(accountInfoResult.Data.Phone);
-            accountInfoResult.Data.CCNumberToRepayment = ComponentsHelper.BasicNumberMaskFormatter(accountInfoResult.Data.CCNumberToRepayment!, "00 0000 0000 0000 0000 0000 0000", false);
+            var result = await ApplicationService.GetAccountInfoAsync(clientId);
 
-            var scheduleResult = await ApplicationService.GetScheduleAsync(accountInfoResult.Data.LoanId);
-            _installmentDtos = scheduleResult.Data;
+            if (result is not null)
+            {
+                result.Phone = ComponentsHelper.FormatPhoneNumber(result.Phone);
+                result.CCNumberToRepayment = ComponentsHelper.BasicNumberMaskFormatter(result.CCNumberToRepayment!, "00 0000 0000 0000 0000 0000 0000", false);
+
+                var scheduleResult = await ApplicationService.GetScheduleAsync(result.LoanId);
+                _installmentDtos = scheduleResult;
+            }
+
+            var loansHistoryResult = await ApplicationService.GetLoansHistoryAsync(clientId);
+            _loanHistoryDtos = loansHistoryResult;
+
+            _accountInfoDto = result;
         }
-
-        var loansHistoryResult = await ApplicationService.GetLoansHistoryAsync(clientId);
-        _loanHistoryDtos = loansHistoryResult.Data;
-
-        _accountInfoDto = accountInfoResult?.Data;
+        catch { }
     }
 }

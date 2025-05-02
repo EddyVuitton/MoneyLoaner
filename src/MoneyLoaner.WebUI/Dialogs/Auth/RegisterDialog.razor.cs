@@ -37,15 +37,9 @@ public partial class RegisterDialog
     {
         try
         {
-            var response = await ApplicationService.RegisterAsync((RegisterAccountForm)context.Model);
-
-            if (!response.IsSucces)
-            {
-                SnackbarHelper.Show(response.Message!, Severity.Error, true, false);
-                return;
-            }
-
+            await ApplicationService.RegisterAsync((RegisterAccountForm)context.Model);
             SnackbarHelper.Show("Konto zostało poprawnie zarejestrowane", Severity.Success, true, false);
+            
             await OpenLoginDialog();
         }
         catch (Exception ex)
@@ -57,7 +51,7 @@ public partial class RegisterDialog
 
     private async Task OpenLoginDialog()
     {
-        this.Cancel();
+        Cancel();
         await Task.Delay(400);
 
         var options = new DialogOptions

@@ -126,7 +126,7 @@ public class AccountBusinessLogic(IConfiguration configuration) : IAccountBusine
         await using var con = new SqlConnection(_connectionString);
 
         var param = new { email, pk_id, pesel };
-        var result = await con.QuerySingleAsync<UserAccountDto>($"exec p_uzytkownik_konto_pobierz @email, @pk_id, @pesel;", param);
+        var result = await con.QueryFirstOrDefaultAsync<UserAccountDto>($"exec p_uzytkownik_konto_pobierz @email, @pk_id, @pesel;", param);
 
         return result;
     }

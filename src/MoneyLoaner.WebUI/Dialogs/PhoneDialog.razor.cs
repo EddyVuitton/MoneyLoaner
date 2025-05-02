@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Components;
 using MoneyLoaner.Domain.DTOs;
 using MoneyLoaner.Domain.FluentValidator;
-using MoneyLoaner.WebUI.Helpers;
 using MoneyLoaner.WebUI.Sections;
 using MoneyLoaner.WebUI.Services.ApplicationService;
 using MudBlazor;
@@ -21,14 +20,26 @@ public partial class PhoneDialog
 
     private async Task Submit()
     {
+        if (AccountInfoRef is null)
+        {
+            return;
+        }
+
         await _form.Validate();
 
-        if (_form.IsValid)
+        try
         {
-            var result = await ApplicationService.UpdatePhoneAsync(1, _proposalDto.PhoneNumber!);
-            this.Close();
+            if (_form.IsValid)
+            {
+                await ApplicationService.UpdatePhoneAsync(1, _proposalDto.PhoneNumber!);
 
-            AccountInfoRef?.AfterChangePhoneSubmit(result.IsSucces, ComponentsHelper.FormatPhoneNumber(_proposalDto.PhoneNumber!));
+                Close();
+                AccountInfoRef.AfterChangePhoneSubmit(_proposalDto.PhoneNumber!);
+            }
+        }
+        catch (Exception ex)
+        {
+            AccountInfoRef.FailureAfterSubmitSnackbar(ex.Message);
         }
     }
 

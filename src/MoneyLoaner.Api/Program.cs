@@ -1,19 +1,12 @@
-using MoneyLoaner.Api.Extensions;
 using Swashbuckle.AspNetCore.SwaggerUI;
 using MoneyLoaner.Domain.Context;
 using Microsoft.EntityFrameworkCore;
 using MoneyLoaner.Domain.Extensions;
+using MoneyLoaner.Api;
 
 var builder = WebApplication.CreateBuilder(args);
-
-// Add services to the container.
 builder.AddServices();
-
-if (builder.Environment.IsProduction())
-{
-    //Na potrzeby Dockera
-    builder.WebHost.UseUrls("http://0.0.0.0:80");
-}
+builder.HandleDocker();
 
 var app = builder.Build();
 
@@ -26,8 +19,6 @@ app.UseSwaggerUI(c =>
 });
 
 await MigrateDatabaseAsync();
-
-app.UseHttpsRedirection();
 
 app.UseAuthorization();
 
@@ -51,6 +42,7 @@ async Task MigrateDatabaseAsync()
 
         if (!canConnect)
         {
+            Console.WriteLine("Nie można połaczyć się z bazą danych, uruchamiam migrację...");
             await dbContext.Database.MigrateAsync();
             await dbContext.RunSqlScript("tworzenie_bazy_danych");
         }

@@ -12,22 +12,29 @@ public partial class PasswordDialog
     [Inject] public IApplicationService ApplicationService { get; set; } = null!;
 
     [CascadingParameter] private MudDialogInstance MudDialog { get; set; } = null!;
+
     [Parameter] public AccountInfo? AccountInfoRef { get; set; }
 
     private readonly UpdatePasswordForm _model = new();
 
     private async void OnValidSubmit(EditContext context)
     {
-        var result = await ApplicationService.UpdatePasswordAsync(_model);
-
-        if (!result.IsSucces)
+        if (AccountInfoRef is null)
         {
-            AccountInfoRef?.FailureAfterSubmitSnackbar(result.Message!);
             return;
         }
 
-        Close();
-        AccountInfoRef?.AfterChangePasswordSubmit(result.IsSucces);
+        try
+        {
+            await ApplicationService.UpdatePasswordAsync(_model);
+
+            Close();
+            AccountInfoRef.AfterChangePasswordSubmit();
+        }
+        catch (Exception ex)
+        {
+            AccountInfoRef.FailureAfterSubmitSnackbar(ex.Message);
+        }
     }
 
     private void Close()

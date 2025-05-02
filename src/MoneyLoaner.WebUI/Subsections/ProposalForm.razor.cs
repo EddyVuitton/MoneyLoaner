@@ -44,8 +44,11 @@ public partial class ProposalForm
         };
 
         SnackbarHelper.Show("Wniosek został wysłany", Severity.Info, true, false);
+        
         if (LoanInfoRef is not null)
+        {
             await LoanInfoRef.SubmitNewProposal(proposalDto);
+        }
     }
 
     private void OnInvalidSubmit()

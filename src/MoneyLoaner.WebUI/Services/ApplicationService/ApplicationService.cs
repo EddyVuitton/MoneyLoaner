@@ -1,7 +1,6 @@
 ﻿using MoneyLoaner.Domain.Auth;
 using MoneyLoaner.Domain.DTOs;
 using MoneyLoaner.Domain.Forms;
-using MoneyLoaner.Domain.Http;
 using Newtonsoft.Json;
 using System.Text;
 
@@ -20,154 +19,110 @@ public class ApplicationService : IApplicationService
 
     #region Account
 
-    public async Task<HttpResultT<UserToken>> LoginAsync(LoginAccountForm loginForm)
+    public async Task<UserToken?> LoginAsync(LoginAccountForm loginForm)
     {
         var json = JsonConvert.SerializeObject(loginForm);
         var content = new StringContent(json, Encoding.UTF8, "application/json");
         var response = await _httpClient.PostAsync($"{_ACCOUNTAPI}/Login", content);
+        response.EnsureSuccessStatusCode();
 
         var responseContent = await response.Content.ReadAsStringAsync();
-        var deserialisedResponse = JsonConvert.DeserializeObject<HttpResultT<UserToken>>(responseContent);
-
-        if (deserialisedResponse is null)
-            throw new NullReferenceException(typeof(UserToken).Name);
+        var deserialisedResponse = JsonConvert.DeserializeObject<UserToken>(responseContent);
 
         return deserialisedResponse;
     }
 
-    public async Task<HttpResult> RegisterAsync(RegisterAccountForm registerForm)
+    public async Task RegisterAsync(RegisterAccountForm registerForm)
     {
         var json = JsonConvert.SerializeObject(registerForm);
         var content = new StringContent(json, Encoding.UTF8, "application/json");
         var response = await _httpClient.PostAsync($"{_ACCOUNTAPI}/Register", content);
-
-        var responseContent = await response.Content.ReadAsStringAsync();
-        var deserialisedResponse = JsonConvert.DeserializeObject<HttpResult>(responseContent);
-
-        if (deserialisedResponse is null)
-            throw new NullReferenceException(typeof(HttpResult).Name);
-
-        return deserialisedResponse;
+        response.EnsureSuccessStatusCode();
     }
 
-    public async Task<HttpResultT<UserAccountDto?>> GetUserAccountAsync(string email)
+    public async Task<UserAccountDto?> GetUserAccountAsync(string email)
     {
         var response = await _httpClient.GetAsync($"{_ACCOUNTAPI}/GetUserAccount?email={email}");
-        var responseContent = await response.Content.ReadAsStringAsync();
-        var deserialisedResponse = JsonConvert.DeserializeObject<HttpResultT<UserAccountDto?>>(responseContent);
+        response.EnsureSuccessStatusCode();
 
-        if (deserialisedResponse is null)
-            throw new NullReferenceException(typeof(UserAccountDto).Name);
+        var responseContent = await response.Content.ReadAsStringAsync();
+        var deserialisedResponse = JsonConvert.DeserializeObject<UserAccountDto>(responseContent);
 
         return deserialisedResponse;
     }
 
-    public async Task<HttpResult> UpdateEmailAsync(int pk_id, string email)
+    public async Task UpdateEmailAsync(int pk_id, string email)
     {
         var response = await _httpClient.PostAsync($"{_ACCOUNTAPI}/UpdateEmailAsync?pk_id={pk_id}&email={email}", null);
-        var responseContent = await response.Content.ReadAsStringAsync();
-        var deserialisedResponse = JsonConvert.DeserializeObject<HttpResult>(responseContent);
-
-        if (deserialisedResponse is null)
-            throw new NullReferenceException(typeof(HttpResult).Name);
-
-        return deserialisedResponse;
+        response.EnsureSuccessStatusCode();
     }
 
-    public async Task<HttpResult> UpdatePhoneAsync(int pk_id, string phone)
+    public async Task UpdatePhoneAsync(int pk_id, string phone)
     {
         var response = await _httpClient.PostAsync($"{_ACCOUNTAPI}/UpdatePhoneAsync?pk_id={pk_id}&phone={phone}", null);
-        var responseContent = await response.Content.ReadAsStringAsync();
-        var deserialisedResponse = JsonConvert.DeserializeObject<HttpResult>(responseContent);
-
-        if (deserialisedResponse is null)
-            throw new NullReferenceException(typeof(HttpResult).Name);
-
-        return deserialisedResponse;
+        response.EnsureSuccessStatusCode();
     }
 
-    public async Task<HttpResult> UpdatePasswordAsync(UpdatePasswordForm updatePasswordForm)
+    public async Task UpdatePasswordAsync(UpdatePasswordForm updatePasswordForm)
     {
         var json = JsonConvert.SerializeObject(updatePasswordForm);
         var content = new StringContent(json, Encoding.UTF8, "application/json");
         var response = await _httpClient.PostAsync($"{_ACCOUNTAPI}/UpdatePasswordAsync", content);
-
-        var responseContent = await response.Content.ReadAsStringAsync();
-        var deserialisedResponse = JsonConvert.DeserializeObject<HttpResult>(responseContent);
-
-        if (deserialisedResponse is null)
-            throw new NullReferenceException(typeof(HttpResult).Name);
-
-        return deserialisedResponse;
+        response.EnsureSuccessStatusCode();
     }
 
     #endregion Account
 
     #region Loan
 
-    public async Task<HttpResult> SubmitNewProposalAsync(NewProposalDto newProposalDto)
+    public async Task SubmitNewProposalAsync(NewProposalDto newProposalDto)
     {
         var json = JsonConvert.SerializeObject(newProposalDto);
         var content = new StringContent(json, Encoding.UTF8, "application/json");
         var response = await _httpClient.PostAsync($"{_LOANAPI}/SubmitNewProposalAsync", content);
-
-        var responseContent = await response.Content.ReadAsStringAsync();
-        var deserialisedResponse = JsonConvert.DeserializeObject<HttpResult>(responseContent);
-
-        if (deserialisedResponse is null)
-            throw new NullReferenceException(typeof(HttpResult).Name);
-
-        return deserialisedResponse;
+        response.EnsureSuccessStatusCode();
     }
 
-    public async Task<HttpResultT<List<LoanInstallmentDto>?>> GetScheduleAsync(int po_id)
+    public async Task<List<LoanInstallmentDto>?> GetScheduleAsync(int po_id)
     {
         var response = await _httpClient.GetAsync($"{_LOANAPI}/GetScheduleAsync?po_id={po_id}");
+        response.EnsureSuccessStatusCode();
 
         var responseContent = await response.Content.ReadAsStringAsync();
-        var deserialisedResponse = JsonConvert.DeserializeObject<HttpResultT<List<LoanInstallmentDto>?>>(responseContent);
-
-        if (deserialisedResponse is null)
-            throw new NullReferenceException(typeof(List<LoanInstallmentDto>).Name);
+        var deserialisedResponse = JsonConvert.DeserializeObject<List<LoanInstallmentDto>>(responseContent);
 
         return deserialisedResponse;
     }
 
-    public async Task<HttpResultT<AccountInfoDto?>> GetAccountInfoAsync(int pk_id)
+    public async Task<AccountInfoDto?> GetAccountInfoAsync(int pk_id)
     {
         var response = await _httpClient.GetAsync($"{_LOANAPI}/GetAccountInfoAsync?pk_id={pk_id}");
+        response.EnsureSuccessStatusCode();
 
         var responseContent = await response.Content.ReadAsStringAsync();
-        var deserialisedResponse = JsonConvert.DeserializeObject<HttpResultT<AccountInfoDto?>>(responseContent);
-
-        if (deserialisedResponse is null)
-            throw new NullReferenceException(typeof(AccountInfoDto).Name);
+        var deserialisedResponse = JsonConvert.DeserializeObject<AccountInfoDto>(responseContent);
 
         return deserialisedResponse;
     }
 
-    public async Task<HttpResultT<List<LoanHistoryDto>?>> GetLoansHistoryAsync(int pk_id)
+    public async Task<List<LoanHistoryDto>?> GetLoansHistoryAsync(int pk_id)
     {
         var response = await _httpClient.GetAsync($"{_LOANAPI}/GetLoansHistoryAsync?pk_id={pk_id}");
+        response.EnsureSuccessStatusCode();
 
         var responseContent = await response.Content.ReadAsStringAsync();
-        var deserialisedResponse = JsonConvert.DeserializeObject<HttpResultT<List<LoanHistoryDto>?>>(responseContent);
-
-        if (deserialisedResponse is null)
-            throw new NullReferenceException(typeof(List<LoanHistoryDto>).Name);
+        var deserialisedResponse = JsonConvert.DeserializeObject<List<LoanHistoryDto>>(responseContent);
 
         return deserialisedResponse;
     }
 
-    public async Task<HttpResultT<LoanConfig?>> GetLoanConfigAsync()
+    public async Task<LoanConfig?> GetLoanConfigAsync()
     {
         var response = await _httpClient.GetAsync($"{_LOANAPI}/GetLoanConfigAsync");
+        response.EnsureSuccessStatusCode();
 
         var responseContent = await response.Content.ReadAsStringAsync();
-        var deserialisedResponse = JsonConvert.DeserializeObject<HttpResultT<LoanConfig?>>(responseContent);
-
-        if (deserialisedResponse is null)
-            throw new NullReferenceException(typeof(LoanConfig).Name);
+        var deserialisedResponse = JsonConvert.DeserializeObject<LoanConfig>(responseContent);
 
         return deserialisedResponse;
     }

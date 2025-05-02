@@ -1,7 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
 using MoneyLoaner.Domain.DTOs;
-using MoneyLoaner.Domain.Http;
-using MoneyLoaner.Api.Helpers;
 
 namespace MoneyLoaner.Api.BusinessLogic.Loan;
 
@@ -21,72 +19,77 @@ public class LoanController : ControllerBase
     }
 
     [HttpPost("SubmitNewProposalAsync")]
-    public async Task<HttpResult> SubmitNewProposalAsync(NewProposalDto newProposalDto)
+    public async Task<ActionResult> SubmitNewProposalAsync(NewProposalDto newProposalDto)
     {
         try
         {
             await _businessLogic.SubmitNewProposalAsync(newProposalDto);
-            return HttpApiHelper.Ok();
+
+            return Ok();
         }
-        catch (Exception e)
+        catch (Exception ex)
         {
-            return HttpApiHelper.Error(e);
+            return BadRequest(ex);
         }
     }
 
     [HttpGet("GetScheduleAsync")]
-    public async Task<HttpResultT<List<LoanInstallmentDto>>> GetScheduleAsync(int po_id)
+    public async Task<ActionResult<List<LoanInstallmentDto>>> GetScheduleAsync(int po_id)
     {
         try
         {
             var result = await _businessLogic.GetScheduleAsync(po_id);
-            return HttpApiHelper.Ok(result.ToList());
+
+            return Ok(result.ToList());
         }
-        catch (Exception e)
+        catch (Exception ex)
         {
-            return HttpApiHelper.Error<List<LoanInstallmentDto>>(e);
+            return BadRequest(ex);
         }
     }
 
     [HttpGet("GetAccountInfoAsync")]
-    public async Task<HttpResultT<AccountInfoDto?>> GetAccountInfoAsync(int pk_id)
+    public async Task<ActionResult<AccountInfoDto>> GetAccountInfoAsync(int pk_id)
     {
         try
         {
             var result = await _businessLogic.GetAccountInfoAsync(pk_id);
-            return HttpApiHelper.Ok(result);
+
+            return Ok(result);
         }
-        catch (Exception e)
+        catch (Exception ex)
         {
-            return HttpApiHelper.Error<AccountInfoDto?>(e);
+            return BadRequest(ex);
         }
     }
 
     [HttpGet("GetLoansHistoryAsync")]
-    public async Task<HttpResultT<List<LoanHistoryDto>>> GetLoansHistoryAsync(int pk_id)
+    public async Task<ActionResult<List<LoanHistoryDto>>> GetLoansHistoryAsync(int pk_id)
     {
         try
         {
             var result = await _businessLogic.GetLoansHistoryAsync(pk_id);
-            return HttpApiHelper.Ok(result.ToList());
+
+            return Ok(result.ToList());
         }
-        catch (Exception e)
+        catch (Exception ex)
         {
-            return HttpApiHelper.Error<List<LoanHistoryDto>>(e);
+            return BadRequest(ex);
         }
     }
 
     [HttpGet("GetLoanConfigAsync")]
-    public async Task<HttpResultT<LoanConfig?>> GetLoanConfigAsync()
+    public async Task<ActionResult<LoanConfig?>> GetLoanConfigAsync()
     {
         try
         {
             var result = await _businessLogic.GetLoanConfigAsync();
-            return HttpApiHelper.Ok(result);
+
+            return Ok(result);
         }
-        catch (Exception e)
+        catch (Exception ex)
         {
-            return HttpApiHelper.Error<LoanConfig?>(e);
+            return BadRequest(ex);
         }
     }
 }

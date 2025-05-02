@@ -2,10 +2,6 @@
 using Microsoft.Data.SqlClient;
 using MoneyLoaner.Domain.DTOs;
 using MoneyLoaner.Domain.Helpers;
-using MoneyLoaner.Api.Data;
-using MoneyLoaner.Api.Extensions;
-using System.Collections;
-using System.Data;
 
 namespace MoneyLoaner.Api.BusinessLogic.Loan;
 
@@ -65,7 +61,7 @@ public class LoanBusinessLogic(IConfiguration configuration) : ILoanBusinessLogi
         await using var con = new SqlConnection(_connectionString);
 
         var param = new { pk_id };
-        var result = await con.QuerySingleAsync<AccountInfoDto>("exec p_konto_informacje_pobierz @pk_id;", param);
+        var result = await con.QueryFirstOrDefaultAsync<AccountInfoDto>("exec p_konto_informacje_pobierz @pk_id;", param);
 
         return result;
     }
@@ -84,7 +80,7 @@ public class LoanBusinessLogic(IConfiguration configuration) : ILoanBusinessLogi
     {
         await using var con = new SqlConnection(_connectionString);
 
-        var result = await con.QuerySingleAsync<LoanConfig>("exec p_aktualna_oferta_config;");
+        var result = await con.QueryFirstOrDefaultAsync<LoanConfig>("exec p_aktualna_oferta_config;");
 
         return result;
     }
@@ -111,7 +107,7 @@ public class LoanBusinessLogic(IConfiguration configuration) : ILoanBusinessLogi
         await using var con = new SqlConnection(_connectionString);
 
         var param = new { pesel = proposal.PersonalNumber };
-        var result = await con.QuerySingleAsync<int>("exec p_klient_pobierz @pesel;", param);
+        var result = await con.QueryFirstOrDefaultAsync<int>("exec p_klient_pobierz @pesel;", param);
 
         if (result == 0)
         {
@@ -123,7 +119,7 @@ public class LoanBusinessLogic(IConfiguration configuration) : ILoanBusinessLogi
                 email = proposal.Email,
                 numer_telefonu = proposal.PhoneNumber
             };
-            result = await con.QuerySingleAsync<int>("exec p_pozyczka_klient_aktualizuj @imie, @nazwisko, @pesel, @email, @numer_telefonu;", param1);
+            result = await con.QueryFirstOrDefaultAsync<int>("exec p_pozyczka_klient_aktualizuj @imie, @nazwisko, @pesel, @email, @numer_telefonu;", param1);
         }
 
         return result;
@@ -138,7 +134,7 @@ public class LoanBusinessLogic(IConfiguration configuration) : ILoanBusinessLogi
             rb_id = bankAccountId,
             pk_id = customerId
         };
-        var result = await con.QuerySingleAsync<int>("exec p_pozyczka_dodaj @rb_id, @pk_id;", param);
+        var result = await con.QueryFirstOrDefaultAsync<int>("exec p_pozyczka_dodaj @rb_id, @pk_id;", param);
 
         return result;
     }
@@ -150,7 +146,7 @@ public class LoanBusinessLogic(IConfiguration configuration) : ILoanBusinessLogi
         var ccNumber = GenerateRandomCCNumber();
 
         var param = new { numer = ccNumber };
-        var result = await con.QuerySingleAsync<int>("exec p_rachunek_bankowy_dodaj @numer;", param);
+        var result = await con.QueryFirstOrDefaultAsync<int>("exec p_rachunek_bankowy_dodaj @numer;", param);
 
         return result;
     }
@@ -172,7 +168,7 @@ public class LoanBusinessLogic(IConfiguration configuration) : ILoanBusinessLogi
             numer_konta = proposal.CCNumber?.Replace(" ", string.Empty)
         };
 
-        var newProposalId = await con.QuerySingleAsync<int>("exec p_pozyczka_wniosek_dodaj @pd_id, @imie, @nazwisko, @numer_telefonu, @pesel, @email, @miesieczny_dochod, @miesieczne_wydatki, @numer_konta;", param);
+        var newProposalId = await con.QueryFirstOrDefaultAsync<int>("exec p_pozyczka_wniosek_dodaj @pd_id, @imie, @nazwisko, @numer_telefonu, @pesel, @email, @miesieczny_dochod, @miesieczne_wydatki, @numer_konta;", param);
 
         var param1 = new
         {
@@ -220,7 +216,7 @@ public class LoanBusinessLogic(IConfiguration configuration) : ILoanBusinessLogi
         await using var con = new SqlConnection(_connectionString);
 
         var param = new {po_id};
-        var result = await con.QuerySingleAsync<int>("exec p_scoring_wylicz @po_id;", param);
+        var result = await con.QueryFirstOrDefaultAsync<int>("exec p_scoring_wylicz @po_id;", param);
 
         return result;
     }

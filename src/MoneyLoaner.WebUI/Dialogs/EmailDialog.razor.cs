@@ -12,6 +12,7 @@ public partial class EmailDialog
     [Inject] public IApplicationService ApplicationService { get; set; } = null!;
 
     [CascadingParameter] private MudDialogInstance MudDialog { get; set; } = null!;
+    
     [Parameter] public AccountInfo? AccountInfoRef { get; set; }
 
     private MudForm _form = new();
@@ -20,20 +21,26 @@ public partial class EmailDialog
 
     private async Task Submit()
     {
+        if (AccountInfoRef is null)
+        {
+            return;
+        }
+
         await _form.Validate();
 
-        if (_form.IsValid)
+        try
         {
-            var result = await ApplicationService.UpdateEmailAsync(1, _proposalDto.Email!);
-
-            if (!result.IsSucces)
+            if (_form.IsValid)
             {
-                AccountInfoRef?.FailureAfterSubmitSnackbar(result.Message!);
-                return;
-            }
+                await ApplicationService.UpdateEmailAsync(1, _proposalDto.Email!);
 
-            Close();
-            AccountInfoRef?.AfterChangeEmailSubmit(result.IsSucces, _proposalDto.Email!);
+                Close();
+                AccountInfoRef.AfterChangeEmailSubmit( _proposalDto.Email!);
+            }
+        }
+        catch (Exception ex)
+        {
+            AccountInfoRef.FailureAfterSubmitSnackbar(ex.Message);
         }
     }
 

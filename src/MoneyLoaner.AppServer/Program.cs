@@ -1,16 +1,11 @@
-using MoneyLoaner.Server;
+using MoneyLoaner.AppServer;
 using MoneyLoaner.WebUI.EntryPoint;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.AddServices();
-
-if (builder.Environment.IsProduction())
-{
-    //Na potrzeby Dockera
-    builder.WebHost.UseUrls("http://0.0.0.0:80");
-}
+builder.HandleDocker();
 
 var app = builder.Build();
 
@@ -22,12 +17,9 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
-app.UseHttpsRedirection();
-
 app.UseStaticFiles();
 app.UseAntiforgery();
 
-app.MapRazorComponents<App>()
-    .AddInteractiveServerRenderMode();
+app.MapRazorComponents<App>().AddInteractiveServerRenderMode();
 
 app.Run();

@@ -25,29 +25,23 @@ public partial class LoginDialog
         try
         {
             var loginForm = (LoginAccountForm)context.Model;
-            var response = await ApplicationService!.LoginAsync(loginForm);
+            var response = await ApplicationService.LoginAsync(loginForm);
 
-            if (!response.IsSuccess)
+            if (response is not null)
             {
-                SnackbarHelper!.Show(response.Message!, Severity.Error, true, false);
-                return;
-            }
-
-            if (response.Data is not null)
-            {
-                await LoginService!.LoginAsync(response.Data);
-                NavigationManager!.NavigateTo("account");
+                await LoginService.LoginAsync(response);
+                NavigationManager.NavigateTo("account");
             }
         }
         catch (Exception ex)
         {
-            SnackbarHelper!.Show(ex.Message, Severity.Error);
+            SnackbarHelper.Show(ex.Message, Severity.Error);
         }
     }
 
     private async Task OpenRegisterDialog()
     {
-        this.Cancel();
+        Cancel();
         await Task.Delay(250);
 
         var options = new DialogOptions

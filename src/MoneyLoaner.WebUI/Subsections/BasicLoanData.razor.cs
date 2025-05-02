@@ -3,6 +3,7 @@ using MoneyLoaner.Domain.DTOs;
 using MoneyLoaner.Domain.Helpers;
 using MoneyLoaner.WebUI.Sections;
 using MoneyLoaner.WebUI.Services.ApplicationService;
+using MudBlazor;
 
 namespace MoneyLoaner.WebUI.Subsections;
 
@@ -50,39 +51,43 @@ public partial class BasicLoanData
 
     private async Task LoadDefulatValues()
     {
-        _loanSectionWrapperBorderStyle = _ACTIVEBORDERSTYLE;
-        var resultLoanConfig = await ApplicationService.GetLoanConfigAsync();
-
-        LoanConfig = resultLoanConfig.Data ?? new()
+        try
         {
-            Amount = 5000,
-            AmountMin = 1000,
-            AmountMax = 25000,
-            AmountStep = 100,
-            Period = 12,
-            PeriodMin = 6,
-            PeriodMax = 72,
-            PeriodStep = 3,
-            Fee = 0.16m,
-            ContractualInterest = 0.1575m
-        };
+            _loanSectionWrapperBorderStyle = _ACTIVEBORDERSTYLE;
+            var result = await ApplicationService.GetLoanConfigAsync();
 
-        Loan = new LoanDto
-        {
-            StartDate = _initialNow,
-            FirstInstallmentPaymentDate = _initialNow.AddMonths(1),
-            DayOfDatePayment = _initialNow.Date.Day,
-            Installments = Convert.ToInt32(LoanConfig.Period),
-            Principal = LoanConfig.Amount,
-            Fee = LoanConfig.Amount * LoanConfig.Fee,
-            InterestRate = LoanConfig.ContractualInterest
-        };
+            LoanConfig = result ?? new()
+            {
+                Amount = 5000,
+                AmountMin = 1000,
+                AmountMax = 25000,
+                AmountStep = 100,
+                Period = 12,
+                PeriodMin = 6,
+                PeriodMax = 72,
+                PeriodStep = 3,
+                Fee = 0.16m,
+                ContractualInterest = 0.1575m
+            };
 
-        CalculateXIRR();
-        CalculateInstallments();
-        LoanInfoRef?.UpdateLoan(Loan);
+            Loan = new LoanDto
+            {
+                StartDate = _initialNow,
+                FirstInstallmentPaymentDate = _initialNow.AddMonths(1),
+                DayOfDatePayment = _initialNow.Date.Day,
+                Installments = Convert.ToInt32(LoanConfig.Period),
+                Principal = LoanConfig.Amount,
+                Fee = LoanConfig.Amount * LoanConfig.Fee,
+                InterestRate = LoanConfig.ContractualInterest
+            };
 
-        _isInitialized = true;
+            CalculateXIRR();
+            CalculateInstallments();
+            LoanInfoRef?.UpdateLoan(Loan);
+
+            _isInitialized = true;
+        }
+        catch { }
     }
 
     private void LoanAmountPlus()

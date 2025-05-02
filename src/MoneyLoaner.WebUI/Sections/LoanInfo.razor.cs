@@ -92,18 +92,13 @@ public partial class LoanInfo
 
         try
         {
-            var newProposal = await ApplicationService.SubmitNewProposalAsync(_newProposalDto);
-
-            if (!newProposal.IsSucces)
-            {
-                throw new Exception(newProposal.Message!);
-            }
+            await ApplicationService.SubmitNewProposalAsync(_newProposalDto);
 
             SnackbarHelper.Show("Wniosek został przetworzony", Severity.Success, true, false);
 
             var customerInfo = await ApplicationService.GetUserAccountAsync(proposalDto.Email!);
 
-            if (customerInfo.IsSuccess && customerInfo.Data is not null)
+            if (customerInfo is not null)
             {
                 var clientId = await LoginService.IsLoggedInAsync();
 

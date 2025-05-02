@@ -45,19 +45,12 @@ public partial class AccountInfo
         DialogService.Show<EmailDialog>(null, parameters, options);
     }
 
-    public void AfterChangeEmailSubmit(bool isSuccess, string email)
+    public void AfterChangeEmailSubmit(string email)
     {
-        if (isSuccess)
-        {
-            SnackbarHelper.Show("Pomyślnie zmieniono adres email", Severity.Success, true, false);
+        SnackbarHelper.Show("Pomyślnie zmieniono adres email", Severity.Success, true, false);
 
-            AccountInfoDto!.Email = email;
-            StateHasChanged();
-        }
-        else
-        {
-            SnackbarHelper.Show("Błąd przy zmianie adresu email", Severity.Warning, true, false);
-        }
+        AccountInfoDto!.Email = email;
+        StateHasChanged();
     }
 
     #endregion ChangeEmail
@@ -82,19 +75,12 @@ public partial class AccountInfo
         DialogService.Show<PhoneDialog>(null, parameters, options);
     }
 
-    public void AfterChangePhoneSubmit(bool isSuccess, string phone)
+    public void AfterChangePhoneSubmit(string phone)
     {
-        if (isSuccess)
-        {
-            SnackbarHelper.Show("Pomyślnie zmieniono numer telefonu", Severity.Success, true, false);
+        SnackbarHelper.Show("Pomyślnie zmieniono numer telefonu", Severity.Success, true, false);
 
-            AccountInfoDto!.Phone = phone;
-            StateHasChanged();
-        }
-        else
-        {
-            SnackbarHelper.Show("Błąd przy zmianie numeru telefonu", Severity.Warning, true, false);
-        }
+        AccountInfoDto!.Phone = phone;
+        StateHasChanged();
     }
 
     #endregion ChangePhone
@@ -119,16 +105,9 @@ public partial class AccountInfo
         DialogService.Show<PasswordDialog>(null, parameters, options);
     }
 
-    public void AfterChangePasswordSubmit(bool isSuccess)
+    public void AfterChangePasswordSubmit()
     {
-        if (isSuccess)
-        {
-            SnackbarHelper.Show("Pomyślnie zmieniono hasło", Severity.Success, true, false);
-        }
-        else
-        {
-            SnackbarHelper.Show("Błąd przy zmianie hasła", Severity.Warning, true, false);
-        }
+        SnackbarHelper.Show("Pomyślnie zmieniono hasło", Severity.Success, true, false);
     }
 
     #endregion ChangePassword

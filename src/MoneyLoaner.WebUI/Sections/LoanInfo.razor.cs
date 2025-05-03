@@ -25,6 +25,27 @@ public partial class LoanInfo
 
     private bool _submitProposalLoading = false;
 
+    protected override async Task OnInitializedAsync()
+    {
+        var clientId = await LoginService.IsLoggedInAsync();
+
+        if (clientId > 0)
+        {
+            var accountInfo = await ApplicationService.GetAccountInfoAsync(clientId);
+
+            if (accountInfo is null)
+            {
+                return;
+            }
+
+            _proposalFormRef.ApplicationForm.Name = accountInfo.Name;
+            _proposalFormRef.ApplicationForm.Surname = accountInfo.Surname;
+            _proposalFormRef.ApplicationForm.PhoneNumber = accountInfo.Phone;
+            _proposalFormRef.ApplicationForm.Email = accountInfo.Email;
+            _proposalFormRef.ApplicationForm.PersonalNumber = accountInfo.PersonalNumber;
+        }
+    }
+
     #region PrivateMethods
 
     private async Task ChangeDatePayment(DateTime? day)

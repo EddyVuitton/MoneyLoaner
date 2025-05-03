@@ -8,7 +8,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MoneyLoaner.Api", "MoneyLoa
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MoneyLoaner.WebUI", "MoneyLoaner.WebUI\MoneyLoaner.WebUI.csproj", "{FC4F07D8-4EFB-4DC9-8B18-A16CEFC82312}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MoneyLoaner.AppServer", "MoneyLoaner.AppServer\MoneyLoaner.AppServer.csproj", "{3F6DD275-7D8A-4453-B1C3-4B8C68E8B29E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MoneyLoaner.App", "MoneyLoaner.App\MoneyLoaner.App.csproj", "{3F6DD275-7D8A-4453-B1C3-4B8C68E8B29E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

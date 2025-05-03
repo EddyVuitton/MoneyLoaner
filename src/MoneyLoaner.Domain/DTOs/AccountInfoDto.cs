@@ -2,6 +2,7 @@
 
 public class AccountInfoDto
 {
+    public int AccountId { get; set;}
     public string? ClientNumber { get; set; }
     public string? Name { get; set; }
     public string? Surname { get; set; }

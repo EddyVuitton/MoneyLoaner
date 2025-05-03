@@ -21,7 +21,7 @@ public partial class EmailDialog
 
     private async Task Submit()
     {
-        if (AccountInfoRef is null)
+        if (AccountInfoRef is null || AccountInfoRef.AccountInfoDto is null)
         {
             return;
         }
@@ -32,7 +32,7 @@ public partial class EmailDialog
         {
             if (_form.IsValid)
             {
-                await ApplicationService.UpdateEmailAsync(1, _proposalDto.Email!);
+                await ApplicationService.UpdateEmailAsync(AccountInfoRef.AccountInfoDto.AccountId, _proposalDto.Email!);
 
                 Close();
                 AccountInfoRef.AfterChangeEmailSubmit( _proposalDto.Email!);

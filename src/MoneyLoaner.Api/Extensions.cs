@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using MoneyLoaner.Api.BusinessLogic.Account;
-using MoneyLoaner.Api.BusinessLogic.Loan;
+using MoneyLoaner.Api.Repositories.Account;
+using MoneyLoaner.Api.Repositories.Loan;
 using MoneyLoaner.Domain.Context;
 
 namespace MoneyLoaner.Api;

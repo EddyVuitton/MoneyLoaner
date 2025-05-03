@@ -1,9 +1,9 @@
-name: moneyloaner-app
+name: moneyloaner
 
 services:
-  localhost.sqlserver:
+  localhost.sql:
     image: mcr.microsoft.com/mssql/server:2022-latest
-    container_name: moneyloaner_sqlserver
+    container_name: moneyloaner_sql
     environment:
       SA_PASSWORD: "2LB%sL!fq%XNQ6&#cGG"
       ACCEPT_EULA: "Y"
@@ -20,7 +20,7 @@ services:
     ports:
       - "8080:80"
     depends_on:
-      - localhost.sqlserver
+      - localhost.sql
     networks:
       - moneyloaner-net
     environment:
@@ -29,8 +29,8 @@ services:
   localhost.appserver:
     build:
       context: .
-      dockerfile: MoneyLoaner.AppServer/Dockerfile
-    container_name: moneyloaner_appserver
+      dockerfile: MoneyLoaner.App/Dockerfile
+    container_name: moneyloaner_app
     ports:
       - "8081:80"
     depends_on:

@@ -1,4 +1,4 @@
-using MoneyLoaner.AppServer;
+using MoneyLoaner.App;
 using MoneyLoaner.WebUI.EntryPoint;
 
 var builder = WebApplication.CreateBuilder(args);

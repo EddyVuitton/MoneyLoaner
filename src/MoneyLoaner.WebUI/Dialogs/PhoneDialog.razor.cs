@@ -20,7 +20,7 @@ public partial class PhoneDialog
 
     private async Task Submit()
     {
-        if (AccountInfoRef is null)
+        if (AccountInfoRef is null || AccountInfoRef.AccountInfoDto is null)
         {
             return;
         }
@@ -31,7 +31,7 @@ public partial class PhoneDialog
         {
             if (_form.IsValid)
             {
-                await ApplicationService.UpdatePhoneAsync(1, _proposalDto.PhoneNumber!);
+                await ApplicationService.UpdatePhoneAsync(AccountInfoRef.AccountInfoDto.AccountId, _proposalDto.PhoneNumber!);
 
                 Close();
                 AccountInfoRef.AfterChangePhoneSubmit(_proposalDto.PhoneNumber!);

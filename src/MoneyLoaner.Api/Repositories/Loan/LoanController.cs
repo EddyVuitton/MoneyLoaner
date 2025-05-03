@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using MoneyLoaner.Domain.DTOs;
 
-namespace MoneyLoaner.Api.BusinessLogic.Loan;
+namespace MoneyLoaner.Api.Repositories.Loan;
 
 [ApiController]
 [Route("api/[controller]")]

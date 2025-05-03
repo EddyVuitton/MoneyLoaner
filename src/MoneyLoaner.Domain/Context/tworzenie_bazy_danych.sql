@@ -811,7 +811,6 @@ begin
 		return;
 	end
 
-	declare @pk_id_out table (id int);
 	insert into @pk_id_out
 	exec p_pozyczka_klient_aktualizuj @imie, @nazwisko, @pesel, @email, null;
 
@@ -958,6 +957,7 @@ begin
 	declare @czy_zdyskwalifikowana_pozyczka bit = (select scoring.f_scoring_wynik(@aktualna_pozyczka));
 
 	select
+		pk_id [AccountId],
 		pk_numer [ClientNumber],
 		pk_imie [Name],
 		pk_nazwisko [Surname],
@@ -977,8 +977,7 @@ begin
 		join rachunek_bankowy on rb_id = po_rb_id
 		where po_id = @aktualna_pozyczka and @czy_zdyskwalifikowana_pozyczka = 0
 	) x on pk_id = po_pk_id
-	where
-		pk_id = @pk_id
+	where pk_id = @pk_id
 end;
 go
 

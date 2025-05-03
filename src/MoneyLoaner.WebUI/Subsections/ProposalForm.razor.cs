@@ -13,7 +13,7 @@ public partial class ProposalForm
 
     [Parameter] public LoanInfo? LoanInfoRef { get; set; }
 
-    private readonly ApplicationForm _applicationForm = new();
+    public ApplicationForm ApplicationForm { get; set; } = new();
 
     private string _proposalSectionWrapperBorderStyle = string.Empty;
     private const string _ACTIVEBORDERSTYLE = "border: 2px solid #594ae2;";
@@ -33,18 +33,18 @@ public partial class ProposalForm
     {
         var proposalDto = new ProposalDto
         {
-            Name = _applicationForm.Name,
-            Surname = _applicationForm.Surname,
-            PhoneNumber = _applicationForm.PhoneNumber,
-            Email = _applicationForm.Email,
-            PersonalNumber = _applicationForm.PersonalNumber,
-            MonthlyIncome = _applicationForm.MonthlyIncome,
-            MonthlyExpenses = _applicationForm.MonthlyExpenses,
-            CCNumber = _applicationForm.CCNumber
+            Name = ApplicationForm.Name,
+            Surname = ApplicationForm.Surname,
+            PhoneNumber = ApplicationForm.PhoneNumber,
+            Email = ApplicationForm.Email,
+            PersonalNumber = ApplicationForm.PersonalNumber,
+            MonthlyIncome = ApplicationForm.MonthlyIncome,
+            MonthlyExpenses = ApplicationForm.MonthlyExpenses,
+            CCNumber = ApplicationForm.CCNumber
         };
 
         SnackbarHelper.Show("Wniosek został wysłany", Severity.Info, true, false);
-        
+
         if (LoanInfoRef is not null)
         {
             await LoanInfoRef.SubmitNewProposal(proposalDto);

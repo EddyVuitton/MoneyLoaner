@@ -2,8 +2,9 @@
 using Microsoft.Data.SqlClient;
 using MoneyLoaner.Domain.DTOs;
 using MoneyLoaner.Domain.Helpers;
+using System.Text;
 
-namespace MoneyLoaner.Api.BusinessLogic.Loan;
+namespace MoneyLoaner.Api.Repositories.Loan;
 
 public class LoanBusinessLogic(IConfiguration configuration) : ILoanBusinessLogic
 {
@@ -192,13 +193,14 @@ public class LoanBusinessLogic(IConfiguration configuration) : ILoanBusinessLogi
         var random = new Random();
         const string digits = "0123456789";
 
-        var randomChars = new char[24];
+        var sB = new StringBuilder();
+        sB.Append('1').Append('1');
         for (int i = 0; i < 24; i++)
         {
-            randomChars[i] = digits[random.Next(digits.Length)];
+            sB.Append(random.Next(digits.Length));
         }
 
-        return $"11{randomChars}";
+        return sB.ToString();
     }
 
     private static void ReplaceSpacesToEmptyString(ProposalDto proposal)

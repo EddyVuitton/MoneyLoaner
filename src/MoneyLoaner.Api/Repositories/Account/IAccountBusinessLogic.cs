@@ -2,7 +2,7 @@
 using MoneyLoaner.Domain.DTOs;
 using MoneyLoaner.Domain.Forms;
 
-namespace MoneyLoaner.Api.BusinessLogic.Account;
+namespace MoneyLoaner.Api.Repositories.Account;
 
 public interface IAccountBusinessLogic
 {

@@ -4,7 +4,7 @@ using MoneyLoaner.WebUI.Helpers.Snackbar;
 using MoneyLoaner.WebUI.Services.ApplicationService;
 using MudBlazor.Services;
 
-namespace MoneyLoaner.AppServer;
+namespace MoneyLoaner.App;
 
 public static class Extensions
 {
@@ -28,7 +28,7 @@ public static class Extensions
 
     private static void AddApi(this WebApplicationBuilder builder)
     {
-        var apiBaseAddress = builder.Configuration.GetSection("Api:BaseAddress").Value ?? string.Empty;
+        var apiBaseAddress = builder.Configuration.GetSection("Api:Host").Value ?? string.Empty;
 
         builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(apiBaseAddress) });
         builder.Services.AddScoped<IApplicationService, ApplicationService>();

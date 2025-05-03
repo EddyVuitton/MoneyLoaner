@@ -3,7 +3,7 @@ using MoneyLoaner.Domain.Auth;
 using MoneyLoaner.Domain.DTOs;
 using MoneyLoaner.Domain.Forms;
 
-namespace MoneyLoaner.Api.BusinessLogic.Account;
+namespace MoneyLoaner.Api.Repositories.Account;
 
 [ApiController]
 [Route("api/[controller]")]

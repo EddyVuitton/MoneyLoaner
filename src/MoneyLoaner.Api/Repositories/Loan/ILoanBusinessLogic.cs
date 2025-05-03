@@ -1,6 +1,6 @@
 ﻿using MoneyLoaner.Domain.DTOs;
 
-namespace MoneyLoaner.Api.BusinessLogic.Loan;
+namespace MoneyLoaner.Api.Repositories.Loan;
 
 public interface ILoanBusinessLogic
 {

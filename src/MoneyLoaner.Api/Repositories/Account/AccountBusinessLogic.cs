@@ -7,12 +7,12 @@ using System.Text;
 using Dapper;
 using Microsoft.Data.SqlClient;
 
-namespace MoneyLoaner.Api.BusinessLogic.Account;
+namespace MoneyLoaner.Api.Repositories.Account;
 
 public class AccountBusinessLogic(IConfiguration configuration) : IAccountBusinessLogic
 {
     private readonly string _connectionString = configuration.GetConnectionString("Database") ?? throw new Exception("Brak connection string do bazy danych");
-    private readonly byte[] _jwtKeyBytes = Encoding.UTF8.GetBytes(configuration["JWT:key"]!);
+    private readonly byte[] _jwtKeyBytes = Encoding.UTF8.GetBytes(configuration["JWT:Key"]!);
 
     public async Task<UserToken> LoginAsync(LoginAccountForm loginForm)
     {

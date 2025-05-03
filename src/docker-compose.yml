@@ -1,4 +1,4 @@
-name: MoneyLoaner
+name: moneyloaner-app
 
 services:
   localhost.sqlserver:

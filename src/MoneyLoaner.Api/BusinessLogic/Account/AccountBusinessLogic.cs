@@ -43,22 +43,30 @@ public class AccountBusinessLogic(IConfiguration configuration) : IAccountBusine
 
     public async Task<string> RegisterAsync(RegisterAccountForm registerForm)
     {
-        if (registerForm is null || string.IsNullOrEmpty(registerForm.Email) || string.IsNullOrEmpty(registerForm.Password))
-            throw new Exception("Niepoprawna próba rejestracji");
-
-        await using var con = new SqlConnection(_connectionString);
-
-        var param = new
+        try
         {
-            imie = registerForm.Name,
-            nazwisko = registerForm.Surname,
-            pesel = registerForm.PersonalNumber,
-            email = registerForm.Email,
-            haslo = AuthHelper.HashPassword(registerForm.Password)
-        };
-        await con.QueryAsync("exec p_uzytkownik_konto_dodaj @imie, @nazwisko, @pesel, @email, @haslo;", param);
+            if (registerForm is null || string.IsNullOrEmpty(registerForm.Email) || string.IsNullOrEmpty(registerForm.Password))
+                throw new Exception("Niepoprawna próba rejestracji");
 
-        return "Konto poprawnie zarejestrowane";
+            await using var con = new SqlConnection(_connectionString);
+
+            var param = new
+            {
+                imie = registerForm.Name,
+                nazwisko = registerForm.Surname,
+                pesel = registerForm.PersonalNumber,
+                email = registerForm.Email,
+                haslo = AuthHelper.HashPassword(registerForm.Password)
+            };
+            await con.QueryAsync("exec p_uzytkownik_konto_dodaj @imie, @nazwisko, @pesel, @email, @haslo;", param);
+
+            return "Konto poprawnie zarejestrowane";
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"{DateTime.Now:yyyy-MM-dd HH:mm:ss.fff} [RegisterAsync] {ex}");
+            return ex.Message;
+        }
     }
 
     public async Task UpdateEmailAsync(int pk_id, string email)
@@ -91,7 +99,7 @@ public class AccountBusinessLogic(IConfiguration configuration) : IAccountBusine
             pk_id,
             numer_telefonu = phone
         };
-        await con.QueryAsync("exec p_klient_telefon_aktualizuj @pk_id, @haslo;", param);
+        await con.QueryAsync("exec p_klient_telefon_aktualizuj @pk_id, @numer_telefonu;", param);
     }
 
     public async Task UpdatePasswordAsync(UpdatePasswordForm updatePasswordForm)

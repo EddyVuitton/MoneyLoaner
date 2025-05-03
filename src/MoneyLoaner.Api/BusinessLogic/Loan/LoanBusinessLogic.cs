@@ -21,9 +21,6 @@ public class LoanBusinessLogic(IConfiguration configuration) : ILoanBusinessLogi
 
         ReplaceSpacesToEmptyString(proposal);
 
-        if (loan is null || proposal is null)
-            throw new Exception("");
-
         //przygotuj id klienta
         var customerId = await AddOrGetCustomerAsync(proposal);
 
@@ -201,21 +198,21 @@ public class LoanBusinessLogic(IConfiguration configuration) : ILoanBusinessLogi
             randomChars[i] = digits[random.Next(digits.Length)];
         }
 
-        return "11" + new string(randomChars);
+        return $"11{randomChars}";
     }
 
     private static void ReplaceSpacesToEmptyString(ProposalDto proposal)
     {
-        proposal.CCNumber = proposal.CCNumber?.Replace(" ", "");
-        proposal.PhoneNumber = proposal.PhoneNumber?.Replace(" ", "");
-        proposal.Email = proposal.Email?.Replace(" ", "");
+        proposal.CCNumber = proposal.CCNumber?.Replace(" ", string.Empty);
+        proposal.PhoneNumber = proposal.PhoneNumber?.Replace(" ", string.Empty);
+        proposal.Email = proposal.Email?.Replace(" ", string.Empty);
     }
 
     private async Task<int> CalculateScoringAsync(int po_id)
     {
         await using var con = new SqlConnection(_connectionString);
 
-        var param = new {po_id};
+        var param = new { po_id };
         var result = await con.QueryFirstOrDefaultAsync<int>("exec p_scoring_wylicz @po_id;", param);
 
         return result;

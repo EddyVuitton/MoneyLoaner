@@ -532,6 +532,11 @@ create or alter procedure p_klient_email_aktualizuj
 	@email nvarchar(max)
 as
 begin
+	if (@email is null or len(@email) = 0)
+	begin
+		return;
+	end
+
 	declare @aktualny_email nvarchar(max) = (select em_nazwa from email where em_pk_id = @pk_id and em_data_zakonczenia is null);
 	declare @now datetime = getdate();
 
@@ -562,6 +567,11 @@ create or alter procedure p_klient_telefon_aktualizuj
 	@numer_telefonu varchar(max)
 as
 begin
+	if (@numer_telefonu is null or len(@numer_telefonu) = 0)
+	begin
+		return;
+	end
+
 	declare @aktualny_numer_telefonu varchar(max) = (select tn_nazwa from telefon where tn_pk_id = @pk_id and tn_data_zakonczenia is null);
 	declare @now datetime = getdate();
 	set @numer_telefonu = replace(@numer_telefonu, ' ', '');
@@ -778,6 +788,7 @@ create or alter procedure p_uzytkownik_konto_dodaj
 as
 begin
 	declare @pk_id int, @uk_id int, @em_id int, @em_pk_id int;
+	declare @pk_id_out table (id int);
 	
 	select top 1 @pk_id = pk_id, @uk_id = @uk_id
 	from pozyczka_klient
@@ -801,7 +812,6 @@ begin
 	end
 
 	declare @pk_id_out table (id int);
-
 	insert into @pk_id_out
 	exec p_pozyczka_klient_aktualizuj @imie, @nazwisko, @pesel, @email, null;
 
